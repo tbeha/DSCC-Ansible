@@ -22,13 +22,13 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Playbook    | Required Parameter                   | Optional Parameter       | Description           | 
 |-------------------|--------------------------------------|--------------------------|-----------------------|
 | Get-Access-Token  |  |  | Getss a new access token |
-| Get-AuditEvents  |  | Limit: the number of events to retrieve (Default: 50) | Gets the last audit events |
+| Get-AuditEvents  |  | Limit: (50) the number of events to retrieve | Gets the last audit events |
 | Get-Host-Duplicates  |  |  | Gets the list of host duplicates  |
 | Get-HostGroup-Details  | HostGroupName  |  | Gets the details of the host group with name __HostGroupName__   |
-| Get-HostGroups |  |  |  |
-| Get-Hosts |  |  |  |
-| Get-Initiators  |  |  |  |
-| Get-Snapshot-Details |  |  |  |
+| Get-HostGroups |  |  | Gets all host groups |
+| Get-Hosts |  | offset: (0) limit: (100)  |  Gets list of hosts |
+| Get-Initiators  |  | offset: (0) limit: (250)  |  Gets list of initiators |
+| Get-Snapshot-Details | VolumeName, SnapshotName or SnapshotId |  | Gets the details of the snapshot defined by __VolumeName__ and __SnapshotName__ or __SnapshotId__  |
 | Get-System-Capacity |  |  |  |
 | Get-SystemVolumes |  |  |  |
 | Get-Systems  |  |  |   |
