@@ -1,0 +1,36 @@
+---
+- name: Get Task Details
+  # (c) Thomas Beha, v2.0 10/13/2024
+  # Retrieves the detailed information of a task identified by taskid
+  #
+  # Parameter:
+  #   taskid
+  #
+  # Output: stored in tasks/taskid.json
+  #
+  # Run command: ansible-playbook Get-HostGroups.yaml
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/tasks/{{ taskid }}"
+  tasks:
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Set task variable
+      ansible.builtin.set_fact:
+        taskstatus: "{{ response.json }}"
+
+    - name: Show result.status
+      vars:
+        elementname: "Task: {{ taskid }}"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

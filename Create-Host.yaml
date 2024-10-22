@@ -1,0 +1,106 @@
+---
+- name: Create Host
+  # v1 09/27/2029 Thomas Beha
+  #
+  # Required Parameter:
+  #   name   name of the host
+  #   os     host Operating System
+  #         AIX, Apple, Citrix Hypervisor(XenServer), HP-UX, IVM VIO Server, InForm, NetApp/ONTAP, OE Linux UEK, OpenVMS,
+  #         Oracle VM x86, RHE Linux, RHE Virtualization, Solaris, SuSe Linux, SuSe Virtualization, Ubuntu, VMware (ESXi), Windows Server
+  # Optional Parameter:
+  #   comment       Comment
+  #   contact       Contact Email address
+  #   fqdn          FQDN
+  #   hostGroupIds  List of hostgroup IDs
+  #   initiatorIds        list of initiator ids  Array of strings or null
+  #   initiatorsToCreate  list of initiators to be created and added to this host
+  #   ipAddress     IP address of the host
+  #   location      location
+  #   persona       Host persona details
+  #   subnet        subnet
+  #
+  # ansible-playbook Create-Host.yaml -e '{"hostName": " ...", "comment":"Thomas Beha",
+  #                                "hostIds":["f296b54a83450f32616f7a33","82a98411f506f648c114fd5b913bc8a8"]}'
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "/api/v1/host-initiators"
+    body:
+      name: "{{ name }}"
+      operatingSystem: "{{ os}}"
+  tasks:
+
+    - name: IP Address
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'ipAddress':'{{ ipAddress }}' }) }}"
+      when: ipAddress is defined and ipAddress != ""
+
+    - name: Comment
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'comment':'{{ comment }}' }) }}"
+      when: comment is defined and comment != ""
+
+    - name: Contact
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'contact':'{{ contact }}' }) }}"
+      when: contact is defined and contact != ""
+
+    - name: FQDN
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'fqdn':'{{ fqdn }}' }) }}"
+      when: fqdn is defined and fqdn != ""
+
+    - name: HostGroup IDs
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hostGroupIds':'{{ hostGroupIds }}' }) }}"
+      when: hostGroupIds is defined and hostGroupIds != ""
+
+    - name: Initiator IDs
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'initiatorIds':'{{ initiatorIds }}' }) }}"
+      when: initiatorIds is defined and initiatorIds != ""
+
+    - name: Initiators to Create
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'initiatorsToCreate':'{{ initiatorsToCreate }}' }) }}"
+      when: initiatorsToCreate is defined and initiatorsToCreate != ""
+
+    - name: IP Address
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'ipAddress':'{{ ipAddress }}' }) }}"
+      when: ipAddress is defined and ipAddress != ""
+
+    - name: Location
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'location':'{{ location}}' }) }}"
+      when: location is defined and location != ""
+
+    - name: Persona
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'persona':'{{ persona }}' }) }}"
+      when: persona is defined and persona != ""
+
+    - name: Subnet
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'subnet':'{{ subnet }}' }) }}"
+      when: subnet is defined and subnet != ""
+
+    - name: Get Access Token
+      ansible.builtin.set_fact:
+        token: "{{ lookup('file', 'token.txt') }}"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "HostGroup"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

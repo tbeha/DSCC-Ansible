@@ -1,0 +1,12 @@
+---
+- name: Read Access Token
+  hosts: localhost #suo04tlb002
+  tasks:
+    - name: Read the access token
+      ansible.builtin.set_fact:
+        token: "{{ lookup('file','token.txt') }}"
+    
+    - name: Print the token
+      ansible.builtin.debug:
+        var: token
+

@@ -1,0 +1,57 @@
+---
+- name: Get Hosts
+  # v1 09/27/2029 Thomas Beha
+  # Retrieves the list of the hosts defined in the DSCC and stores it in hosts.json
+  # Parameter: none
+  # Output: hosts list stored in hosts.json
+  #   {
+  #     <hostname>: {
+  #       id: host.id,
+  #       resourceUri: host.resourceUri
+  #     }
+  #   }
+  # Run Command: ansible-playbook Get-Hosts.yaml
+  hosts: localhost
+  vars:
+    offset: 0
+    limit: 100
+    method: "GET"
+    request_uri: "/api/v1/host-initiators?limit={{ limit }}&offset={{ offset }}"
+  tasks:
+    - name: Check for Limit
+      ansible.builtin.set_fact:
+        limit: "{{ Limit }}"
+      when: Limit is defined and Limit != ""
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize hosts dictionary
+      ansible.builtin.set_fact:
+        dscc_hosts: "{{ dscc_hosts | default({}) }}"
+
+    - name: Loop through Result and populate the hosts dictionary
+      ansible.builtin.set_fact:
+        dscc_hosts: "{{ dscc_hosts | combine({item.name: item.id}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Store the Hosts List
+      ansible.builtin.copy:
+        content: "{{ dscc_hosts | to_json }}"
+        dest: hosts.json
+        mode: '0644'
+
+    - name: Show Results
+      vars:
+        elements: dscs_hosts
+        elementname: "Hosts"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml
+        

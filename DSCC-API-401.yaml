@@ -1,0 +1,7 @@
+- name: Get new access token when status 401
+  ansible.builtin.include_tasks:
+    file: Get-Token.yaml
+
+- name: Retry the command if status 401
+  ansible.builtin.include_tasks:
+    file: DSCC-API-Call.yaml

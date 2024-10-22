@@ -1,0 +1,85 @@
+---
+- name: Get Create Snapshot
+  # v1 10/07/2029 Thomas Beha
+  #
+  # Required Parameter:
+  #   VolumeName
+  #   NamePattern - Name pattern: "PARENT_TIMESTAMP", "PARENT_SEC_SINCE_EPOCH", "CUSTOM"
+  # Optional Parameter:
+  #   Comment - string or null 
+  #   CustomName - Snapshot Name or null
+  #   ExpireSecs - Expiration time ins seconds
+  #   ReadOnly - Boolean
+  #   RetainSecs / Retention time in seconds 
+  #
+  #   Attention if a CustomName is defined for the Snapshot then the NamePattern entry is obviously ignored. 
+  #   
+  # ansible-playbook Create-Snapshot.yaml -e "VolumeName='AnsibleTestVolume_01' ..."
+
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "{{ myvol.resourceUri }}/snapshots"
+    body:
+      namePattern: "PARENT_TIMESTAMP"
+      readOnly: "true"
+  tasks:
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', 'volumes.json' ) | from_json }}"
+
+    - name: Get volume
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
+
+    - name: Check for Expiration
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'expireSecs': '{{  ExpireSecs }}' }) }}"
+      when: ExpireSecs is defined and ExpireSecs != ""
+
+    - name: Check for Retentiontime
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'retainSecs': '{{  RetainSecs }}' }) }}"
+      when: RetainSecs is defined and RetainSecs != ""
+
+    - name: Check for Name Pattern
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'namePattern': '{{  NamePattern }}' }) }}"
+      when: NamePattern is defined and NamePattern != ""
+
+    - name: Check for Comment
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'comment': '{{  Comment }}' }) }}"
+      when: Comment is defined and Comment != ""
+
+    - name: Check for ReadOnly
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'readOnly': '{{ ReadOnly }}' }) }}"
+      when: ReadOnly is defined and ReadOnly != ""
+
+    - name: Check For Snapshot Name
+      vars:
+        update:
+          customName: "{{ SnapshotName }}"
+          namePattern: "CUSTOM"
+      ansible.builtin.set_fact:
+        body: "{{ body | combine( update ) }}"
+      when: SnapshotName is defined and SnapshotName != ""
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Snapshot"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 

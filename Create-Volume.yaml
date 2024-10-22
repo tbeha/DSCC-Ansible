@@ -1,0 +1,92 @@
+---
+- name: Create Volumes
+  # v1 09/27/2029 Thomas Beha
+  #
+  # Required Parameter:
+  #   SystemName  name of the storage system
+  #   VolumeName  name of the volume
+  # Optional Parameter
+  #   Size        Size (in MiB) of the volume to be created. Default value: 1024 (1GiB)
+  #   CPG         User CPG. Default: SSD_r6
+  #   Comment     
+  #   Count                 volumes count, default: 1
+  #   DataReduction         default: true
+  #   UserAllocWarning      default 5
+  #   SnapshotAllocWarning  default: 5
+  #
+  # ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "{{ storage['resourceUri'] }}/volumes"
+    body:
+      name: "{{ VolumeName }}"
+      comments: "Thomas Beha - Ansible"
+      userCpg: "SSD_r6"
+      count: "1"
+      dataReduction: true
+      sizeMib: "1024"
+      userAllocWarning: "5" 
+      snapshotAllocWarning: "5"
+  tasks:
+
+    - name: Retrieve storage systems list
+      ansible.builtin.set_fact:
+        systems: "{{ lookup( 'file', 'systems.json') | from_json }}"
+
+    - name: Lookup system
+      vars:
+        key: "{{ SystemName }}"
+      ansible.builtin.set_fact:
+        storage: "{{ systems[key] }}"
+
+    - name: Check CPG
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'userCpg': '{{  CPG }}' }) }}"
+      when: CPG is defined and CPG != ""
+        
+    - name: Check Comment
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'comments': '{{  Comment }}' }) }}"
+      when: Comment is defined and Comment != ""
+
+    - name: Check Count
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'count': '{{  Count }}' }) }}"
+      when: Count is defined and Count != ""
+
+    - name: Check DataReduction
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'dataReduction': '{{  DataReduction }}' }) }}"
+      when: DataReduction is defined and DataReduction != ""
+
+    - name: Check UserAllocWarning
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'userAllocWarning': '{{  UserAllocWarning }}' }) }}"
+      when: UserAllocWarning is defined and UserAllocWarning != ""
+
+    - name: Check UserAllocWarning
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'snapshotAllocWarning': '{{  SnapshotAllocWarning }}' }) }}"
+      when: SnapshotAllocWarning is defined and SnapshotAllocWarning != ""
+
+    - name: Check Volume Size
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'sizeMib': '{{ Size }}'})}}"
+      when: Size is defined and Size != ""
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Volume"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 

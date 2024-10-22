@@ -1,0 +1,60 @@
+---
+- name: Get Storage Systems
+# Playbook get the list of storage systems registered in the DSCC
+# (c) Thomas Beha, v2.0, 10/13/2024
+# The playbook retrieves all storage systems of an DSCC and stores a dictionary of the storage systems in systems.json
+# Storage systems dictionary:
+#   <system name>: {
+#       system id,
+#       resourceUri
+#   }
+#
+# Parameter:
+#  -
+#
+# Output file: systems.json
+#
+# Run Command: ansible-playbook Get-StorageSystems.yaml
+#
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/storage-systems"
+  tasks:
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Set systems
+      ansible.builtin.set_fact:
+        systems: "{{ response.json['items'] }}"
+      when: status in ['200', '201']
+
+    - name: Initialize Storage system dictionary if not defined
+      ansible.builtin.set_fact:
+        storage_systems: "{{ storage_systems | default({}) }}"
+
+    - name: Loop through Systems
+      ansible.builtin.set_fact:
+        storage_systems: "{{ storage_systems | combine({item.name: {'id': item.id, 'resourceUri': item.resourceUri}}) }}"
+      with_items: "{{ systems }}"
+
+    - name: Store the Systems List
+      ansible.builtin.copy:
+        content: "{{ storage_systems| to_json }}"
+        dest: systems.json
+        mode: '0644'
+
+    - name: Show result.status
+      vars:
+        elements: "{{ storage_systems }}"
+        elementname: "Storage Systems"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

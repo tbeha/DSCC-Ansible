@@ -1,0 +1,44 @@
+---
+- name: Get Audit Events
+  # v2 10/14/2024 Thomas Beha
+  # Retrieves the audit events and lists them
+  # Parameter:
+  #   Limit  - default 50
+  # ansible-playbook Get-AuditEvents.yaml -e "Limit='100'"
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/audit-events?limit=50"
+  tasks:
+    - name: Check for Limit Parameter
+      ansible.builtin.set_fact:
+        request_uri: "/api/v1/audit-events?limit={{ Limit }}"
+      when: Limit is defined and Limit != ""
+
+    - name: Get Audit Events
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if response status is 401
+      vars:
+
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize Events dictionary
+      ansible.builtin.set_fact:
+        events: "{{ events | default({}) }}"
+
+    - name: Collect events
+      ansible.builtin.set_fact:
+        events: "{{ events | combine({item.occurredAt: item.message}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Display Events
+      vars:
+        elements: "{{ events }}"
+        elementname: "Audit Events"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml      

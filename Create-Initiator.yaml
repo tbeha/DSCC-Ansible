@@ -1,0 +1,54 @@
+---
+- name: Create Initiator
+  # v1 09/30/2029 Thomas Beha
+  #
+  # Required Parameter:
+  #   address
+  #   protocol  (FC, iSCSI, NVMe)
+  # Optional Parameter:
+  #   IpAddress
+  #   Name
+  #   
+  #
+  # ansible-playbook Create-Initiato.yaml -e "Address=' ' Protocol=' '..."
+
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "/api/v1/initiators"
+    body:
+      address: "{{ Address }}"
+      protocol: "{{ Protocol }}"
+      vendor: "hpe"
+  tasks:
+
+    - name: Initiator Name
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'name':'{{  Name }}' }) }}"
+      when: Name is defined and Name != ""
+
+    - name: IP Address
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'ipAddress':'{{ IpAddress }}' }) }}"
+      when: IpAddress is defined and IpAddress != ""
+
+    - name: Get Access Token
+      ansible.builtin.set_fact:
+        token: "{{ lookup('file', 'token.txt') }}"
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Initiator"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 
+

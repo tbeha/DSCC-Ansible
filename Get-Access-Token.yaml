@@ -1,0 +1,27 @@
+---
+- name: Get Access Token
+# Ansible playbook to retrieve an DSCC Access Token
+# v1 09/26/2024 Thomas Beha
+#
+# The Token will be stored in the file token.txt
+# This token will be valid for 2 hours.
+# Any additional playbook accessing the DSCC can read this token from the file:
+#      - name: Read the access token
+#        ansible.builtin.set_fact:
+#          token: "{{ lookup('file','token.txt') }}"
+# It is recommended to store the credentials used to retrieve the Token the vault file: credentials.yml
+# Usage
+#    ansible-playbook GetAccessToken --vault-password-file <pwdfile>
+# or
+#    ansible-playbook GetAccessToken --ask-vault-pass
+#
+  hosts: localhost 
+  tasks:
+    - name: Include the Get-Token 
+      ansible.builtin.include_tasks:
+        file: Get-Token.yaml
+    
+    - name: DEBUG Output
+      ansible.builtin.debug:
+        var: token
+      when: DEBUG is defined

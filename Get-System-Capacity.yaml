@@ -1,0 +1,40 @@
+---
+- name: Get Storage Systems Capacity
+# Playbook get the list of storage systems registered in the DSCC
+# (c) Thomas Beha, v2.0, 10/13/2024
+#
+# Parameter:
+#  SystemName
+#
+# Run Command: ansible-playbook Get-System-Capacity.yaml -e "SystemNane=' '"
+#
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "{{ storage['resourceUri'] }}/capacity-summary"
+  tasks:
+    - name: Get storage systems from systems.json
+      ansible.builtin.set_fact:
+        systems: "{{ lookup('file', 'systems.json') | from_json}}"
+
+    - name: Lookup system
+      vars:
+        key: "{{ SystemName }}"
+      ansible.builtin.set_fact:
+        storage: "{{ systems[key] }}"    
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show Results 
+      vars:
+        elementname: "{{ SystemName }}-Capacity"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

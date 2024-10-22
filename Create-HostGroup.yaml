@@ -1,0 +1,52 @@
+---
+- name: Create HostGroup
+# v1 09/27/2029 Thomas Beha
+#
+# Required Parameter:
+#   Name      name of the hostgroup
+# Optional Parameter
+#   comment
+#   hostIds       List of Host Ids of existing hosts   Array of strings or null
+#   hostsToCreate List of hosts to be created and added to this host grop.   Array of objects (create host input) or null 
+# ansible-playbook Create-HostGroup.yaml -e '{"hostgroupName": "KVMcluster", "comment":"Thomas Beha", "hostIds":["c81bc3f1
+#                                 f296b54a83450f32616f7a33","82a98411f506f648c114fd5b913bc8a8","e9cc50a6b7dadbbf514f3a02196a6596"]}'
+
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "/api/v1/host-initiator-groups"
+    body:
+      comment: "Thomas Beha - Ansible"
+      name: "{{ Name }}"
+  tasks:
+
+    - name: Comment
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'comment':'{{ comment }}' }) }}"
+      when: comment is defined and comment != ""
+
+    - name: HostIds
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hostIds':'{{ hostIds }}'}) }}"
+      when: hostIds is defined and hostIds !=""
+
+    - name: HostsToCreate
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hostsToCreate':'{{ hostsToCreate }}'}) }}"
+      when: hostsToCreate is defined and hostsToCreate !=""
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results
+      vars:
+        elementname: "HostGroup"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

@@ -1,0 +1,31 @@
+---
+- name: Get Duplicates
+  # v1 09/27/2029 Thomas Beha
+  #
+  # Parameter:
+  #
+  # ansible-playbook Get-Host-Duplicates.yaml
+
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/host-initiator-groups/bulkmerge"
+  tasks:
+    - name: Get Duplicates
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Store the  duplicates list
+      ansible.builtin.copy:
+        content: "{{ response.json['items']| to_json }}"
+        dest: duplicates.json
+        mode: '0644'
+
+    - name: Display result
+      ansible.builtin.debug:
+        var: response.json

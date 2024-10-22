@@ -1,0 +1,16 @@
+- name: Write response
+  ansible.builtin.debug: 
+    var: result
+  when: result.json['total'] is not defined or result.json['pageLimit'] is not defined or elements is not defined 
+
+- name: Display short result
+  ansible.builtin.debug:
+    var: elements
+  when: elements is defined
+
+- name: Write number of Initiators
+  ansible.builtin.debug:
+    msg: "Number of {{ elementname }}: {{ result.json['total'] }}  pageLimit: {{ result.json['pageLimit'] }}"
+  when: result.json['total'] is defined and result.json['pageLimit'] is defined
+
+ 

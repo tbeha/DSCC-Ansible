@@ -1,0 +1,56 @@
+--- 
+- name: Volumedeletion 
+  # Delete Volume playbook
+  # v1.0 10/10/2024 Thomas Beha
+  #
+  # Parameters:
+  #   VolumeName - name of volume that should be deleted
+  # Optional:
+  #   Unexport    default: true
+  #   Cascade     defaut: true     
+  #  
+  # Run command:
+  #   ansible-playbook DeleteVolume.yaml -e "VolumeName='<volumeName>'"
+  #
+  hosts: localhost
+  vars:
+    unexport: "true"
+    cascade: "true"
+    request_uri: "{{ myvol.resourceUri }}?unExport={{ unexport }}&cascade={{ cascade }}"
+    method: "DELETE"
+  tasks:
+    - name: Check Unexport
+      ansible.builtin.set_fact:
+        unexport: "{{ Unexport }}"
+      when: Unexport is defined and Unexport != ""
+
+    - name: Check Cascade
+      ansible.builtin.set_fact:
+        cascade: "{{ cascade }}"
+      when: Cascade is defined and Cascade != ""
+
+    - name: Read Volume List
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', 'volumes.json' ) | from_json }}"
+
+    - name: Get Volume
+      vars:
+        key: "{{ VolumeName }}" 
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Volume"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 

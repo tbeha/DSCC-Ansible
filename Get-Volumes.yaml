@@ -1,0 +1,74 @@
+---
+- name: Get All Volumes
+  # Playbook: Get all volumes
+  # v1 09/26/2029 Thomas Beha
+  # Retrieves of DSCC managed volumes
+  #
+  # Parameter: none
+  #   limit:imit -
+  #   offset -
+  # Ouput: stored in "volumes.json"
+  # Output format:
+  #   {
+  #     <volume.name>: {
+  #        id: volume.id,
+  #        resourceUri: volume.resourceUri
+  #      },
+  #      ...
+  #      <volume.name>: {
+  #        ...
+  #      }
+  #   }
+  #
+  # Run Command:
+  #   ansible-playbook Get-Volumes.yaml -e "offset='0' limit='250'"
+
+  hosts: localhost
+  vars:
+    offset: "0"
+    limit: "250"
+    method: "GET"
+    request_uri: "/api/v1/volumes?limit={{ limit }}&offset={{ offset }}"
+  tasks:
+
+    - name: Check for Offset
+      ansible.builtin.set_fact:
+        offset: "{{  Offset }}"
+      when: Offset is defined and Offset != ""
+
+    - name: Check for Limit
+      ansible.builtin.set_fact:
+        limit: "{{  Limit }}"
+      when: Limit is defined and Limit != ""
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize volume dictionary
+      ansible.builtin.set_fact:
+        volumes: "{{ volumes | default({}) }}"
+
+    - name: Loop through Systems
+      ansible.builtin.set_fact:
+        volumes: "{{ volumes | combine({item.name: {'id': item.id, 'resourceUri': item.resourceUri, 'systemId':item.systemId}}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Store the volumes List
+      ansible.builtin.copy:
+        content: "{{ volumes | to_json }}"
+        dest: "volumes.json"
+        mode: '0644'
+
+    - name: Show results 
+      vars:
+        elements: "{{ volumes }}"
+        elementname: "Volumes"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml    

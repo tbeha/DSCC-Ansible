@@ -1,0 +1,81 @@
+# DSCC API Call tasks
+# (c) Thomas Beha, v1.0 10/13/2024
+# Issue a DSCC API call
+#
+#   Required Parameter
+#   requestUri: the requestUri
+#   method:     the request method (GET, POST, DELETE, PUT)
+#
+#   Optional Parameter
+#   body:       the request body
+# 
+#   Possible Response Status:
+#   200:  Success
+#   201:  Submitted
+#   202:  Accepted
+#   400:  Bad Request
+#   401:  Unauthorized
+#   403:  Forbidden
+#   500:  Internal/unexpected error
+#   503:  Appliance in maintenance mode
+#   default: unexpected error
+#
+- name: Include encrypted vars
+  include_vars: credentials.yml
+
+- name: Get Access Token
+  ansible.builtin.set_fact:
+    token: "{{ lookup('file', 'token.txt') }}"
+
+- name: Check the Methood 
+  ansible.builtin.fail:
+    msg: "DSCC-API-CALL: RestAPI Method is not defined!"
+  when: method is not defined
+
+- name: Check for the request Uri 
+  ansible.builtin.fail:
+    msg: "DSCC-API-Call: Request URI is not defined!"
+  when: request_uri is not defined
+
+- name: DSCC Command
+  ansible.builtin.uri:
+    url: "{{ base_url }}{{ request_uri }}"
+    headers:
+      Authorization: "{{ token }}"
+      Content-Type: "application/json"
+    method: "{{ method }}"
+    validate_certs: false
+    status_code: [200, 201, 202, 401]
+  register: result
+  when: body is not defined
+
+- name: Set result status
+  ansible.builtin.set_fact:
+    status: "{{ result.status }}"
+    tmpres: "{{ result }}"
+  when: body is not defined
+
+- name: DSCC Command with body
+  ansible.builtin.uri:
+    url: "{{ base_url }}{{ request_uri }}"
+    headers:
+      Authorization: "{{ token }}"
+      Content-Type: "application/json"
+    method: "{{ method }}"
+    body_format: json
+    body: "{{ body | to_json }}"
+    validate_certs: false
+    status_code: [200, 201, 202, 401]
+  register: result2
+  when: body is defined
+
+- name: Set result status
+  ansible.builtin.set_fact:
+    status: "{{ result2.status }}"
+    tmpres: "{{ result2 }}"
+  when: body is defined
+
+- name: Set response when status in [200, 201, 202, 401]
+  ansible.builtin.set_fact:
+    response: "{{ tmpres }}"
+  when: status in ['200', '201', '202','401']

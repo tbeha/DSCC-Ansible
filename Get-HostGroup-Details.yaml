@@ -1,0 +1,46 @@
+---
+- name: Get HostGroup Details
+# Playbook Get Details of HostGroup {{HostGroupName}}
+# Parameter:
+#   HostGroupName - name of the hostgroup
+# Output: stored in file hg-<HostGroupName>.json
+#
+# Run Command: ansible-playbook Get-HostGroup-Detail.yaml -e "HostGroupName='<hostgroup-name>'"
+#
+#  - ansible.builtin.import_playbook: Get-HostGroups.yaml
+  hosts: localhost
+  vars:
+    method: "GET"
+  tasks:
+
+    - name: Read host_groups.json
+      ansible.builtin.set_fact:
+        host_groups: "{{ lookup('file', 'host_groups.json') }}"
+
+    - name: Get hostgroup id and set the uri
+      vars:
+        key: "{{ HostGroupName }}"
+      ansible.builtin.set_fact:
+        request_uri: "/api/v1/host-initiator-groups/{{ host_groups[key] }}"
+
+    - name: Get the details of a HostGroup
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Store the data in a file
+      ansible.builtin.copy:
+        content: "{{ response.json | to_json }}"
+        dest: "hg-{{ HostGroupName }}.json"
+        mode: '0644'
+
+    - name: Show result.status
+      vars:
+        elementname: "{{ HostGroupName }}"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

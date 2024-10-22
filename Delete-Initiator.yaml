@@ -1,0 +1,42 @@
+---
+- name: Delete Initiator
+  # v1 10/10/2029 Thomas Beha
+  #
+  # Parameter:
+  #   initiatorId
+  # Optional:
+  #   Force   default: true
+  #
+  # ansible-playbook Delete-Initiator -e "initiatorId=' '"
+
+  hosts: localhost
+  vars:
+    method: "DELETE"
+    request_uri: "/api/v1/host-initiator-groups/{{ initiatorId }}"
+    force: true
+  tasks:
+
+    - name: Check Force Flag
+      ansible.builtin.set_fact:
+        force: "{{ Force }}"
+      when: Force is defined and Force != ""
+      
+    - name: Get Access Token
+      ansible.builtin.set_fact:
+        token: "{{ lookup('file', 'token.txt') }}"
+    
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Snapshot"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 
