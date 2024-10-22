@@ -24,7 +24,7 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Get-Access-Token  |  |  | Getss a new access token |
 | Get-AuditEvents  |  | Limit: the number of events to retrieve (Default: 50) | Gets the last audit events |
 | Get-Host-Duplicates  |  |  | Gets the list of host duplicates  |
-| Get-HostGroup-Details  | HostGroupName  |  | Gets the details of the host group with name <HostGroupName>   |
+| Get-HostGroup-Details  | HostGroupName  |  | Gets the details of the host group with name __HostGroupName__   |
 | Get-HostGroups |  |  |  |
 | Get-Hosts |  |  |  |
 | Get-Initiators  |  |  |  |
