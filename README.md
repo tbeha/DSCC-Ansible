@@ -19,12 +19,12 @@ Common tasks are stored in the following base playbooks:
 
 The base playbooks are used by the task specific playbooks. The following tasks are currently available as playbooks: 
 
-| Basic Playbook    | Required Parameter                   | Optional Parameter       | Description           | 
+| Playbook    | Required Parameter                   | Optional Parameter       | Description           | 
 |-------------------|--------------------------------------|--------------------------|-----------------------|
-| Get-Access-Token  |  |  |  |
-| Get-AuditEvents  |  |  |  |
-| Get-Host-Duplicates  |  |  |  |
-| Get-HostGroup-Details  |  |  |  |
+| Get-Access-Token  |  |  | Getss a new access token |
+| Get-AuditEvents  |  | Limit: the number of events to retrieve (Default: 50) | Gets the last audit events |
+| Get-Host-Duplicates  |  |  | Gets the list of host duplicates  |
+| Get-HostGroup-Details  | HostGroupName  |  | Gets the details of the host group with name <HostGroupName>   |
 | Get-HostGroups |  |  |  |
 | Get-Hosts |  |  |  |
 | Get-Initiators  |  |  |  |
