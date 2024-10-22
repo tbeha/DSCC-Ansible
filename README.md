@@ -7,4 +7,23 @@ The DSCC API documentation can be found at: https://console-us1.data.cloud.hpe.c
 
 The actual ansible.builtin.uri calls are consolidate in three base playbooks:
 
+| Basic Playbook    | Required Parameter                   | Optional Parameter       | Description           | 
+|-------------------|--------------------------------------|--------------------------|-----------------------|
+|DSCC-API-Call.yaml | requestUri: the request URL          | body: the request body   |issues a REST API call |
+|                   | method: the request method           |                          |                       |
+|                   |         (GET, POST, DELETE, PUT)     |                          |                       |
+|-------------------|--------------------------------------|--------------------------|-----------------------|
+|DSCC-API-401.yaml  | requestUri: the request URL          | body: the request body   |Gets a new access token|
+|                   | method: the request method           |                          |and issues a REST API  |
+|                   |         (GET, POST, DELETE, PUT)     |                          |Call                   |
+|-------------------|--------------------------------------|--------------------------|-----------------------|
+|Get-Token.yaml     |                                      |                          |Retrieves an access token |
+|                   |                                      |                          |and stores it in token.txt |
+|-------------------|--------------------------------------|--------------------------|-----------------------|
 
+
+
+## Contact
+Thomas Beha - t.beha@t-online.de
+
+Project Link: https://github.com/tbeha/DSCC-Ansible 
