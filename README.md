@@ -29,15 +29,15 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Get-Hosts |  | offset: (0) limit: (100)  |  Gets list of hosts |
 | Get-Initiators  |  | offset: (0) limit: (250)  |  Gets list of initiators |
 | Get-Snapshot-Details | VolumeName, SnapshotName or SnapshotId |  | Gets the details of the snapshot defined by __VolumeName__ and __SnapshotName__ or __SnapshotId__  |
-| Get-System-Capacity |  |  |  |
-| Get-SystemVolumes |  |  |  |
-| Get-Systems  |  |  |   |
-| Get-Task-Details |  |  |
-| Get-Tasks |  |  |  |
-| Get-Volume-Details |  |  |  |
-| Get-Volume-Snapshots |  |  |  |
-| Get-Volumes |  |  |  |
-| Create-Host |  |  |  |
+| Get-System-Capacity | SystemName |  | Gets the capacity details of the storage system identified by __SystemName__ |
+| Get-SystemVolumes | SystemName |  | Get the volumes of a storage system identified by __SystemName__ |
+| Get-Systems  |  |  | Retrieves all storage systems of an DSCC and stores a dictionary of the storage systems in __systems.json__  |
+| Get-Task-Details | taskid |  | Retrieves the detailed information of a task identified by __taskid__|
+| Get-Tasks |  | offset: (0) limit: (50) | Get the latest tasks and stores it in __tasks.json__  |
+| Get-Volume-Details | VolumeName  |  | Get the details of the Volume identified by __VolumeName__ |
+| Get-Volume-Snapshots | VolumeName |  | Get the Snapshots of the Volume identified by __VolumeName__ |
+| Get-Volumes |  | offset: (0) limit: (250)  | Get the list of volumes |
+| Create-Host | name: name of the host, os: AIX, Apple, Citrix Hypervisor(XenServer), HP-UX, IVM VIO Server, InForm, NetApp/ONTAP, OE Linux UEK, OpenVMS,Oracle VM x86, RHE Linux, RHE Virtualization, Solaris, SuSe Linux, SuSe Virtualization, Ubuntu, VMware (ESXi), Windows Server | comment, contact, fqdn, hostGroupIds, initiatorIds, initiatorsToCreate, ipAddress, location, persona, subnet | Creates a new Host: ansible-playbook Create-Host.yaml -e '{"hostName": " ...", "comment":"Thomas Beha","hostIds":["f296b54a83450f32616f7a33","82a98411f506f648c114fd5b913bc8a8"]}'  |
 | Create-HostGroup |  |  |  |
 | Create-Initiator |  |  |  |
 | Create-Snapshot |  |  |  |
