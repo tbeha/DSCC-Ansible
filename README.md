@@ -38,21 +38,22 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Get-Volume-Snapshots | VolumeName |  | Get the Snapshots of the Volume identified by __VolumeName__ |
 | Get-Volumes |  | offset: (0) limit: (250)  | Get the list of volumes |
 | Create-Host | name: name of the host, os: AIX, Apple, Citrix Hypervisor(XenServer), HP-UX, IVM VIO Server, InForm, NetApp/ONTAP, OE Linux UEK, OpenVMS,Oracle VM x86, RHE Linux, RHE Virtualization, Solaris, SuSe Linux, SuSe Virtualization, Ubuntu, VMware (ESXi), Windows Server | comment, contact, fqdn, hostGroupIds, initiatorIds, initiatorsToCreate, ipAddress, location, persona, subnet | Creates a new Host: ansible-playbook Create-Host.yaml -e '{"hostName": " ...", "comment":"Thomas Beha","hostIds":["f296b54a83450f32616f7a33","82a98411f506f648c114fd5b913bc8a8"]}'  |
-| Create-HostGroup |  |  |  |
-| Create-Initiator |  |  |  |
-| Create-Snapshot |  |  |  |
-| Create-Volume |  |  |  |
-| Delete-HostGroup |  |  |  |
-| Delete-Initiator |  |  |  |
-| Delete-Volume |  |  |  |
-| Export-Volume-Snapshot |  |  |  |
-| Export-Volume |  |  |  |
-| UnExport-Volume-Snapshot |  |  |  |
-| UnExport-Volume |  |  |  |
-| Update-HostGroup |  |  |  |
-| Merge-Duplicates |  |  |  |
-| Show-Data |  |  |  |
-| Search-Data |  |  |  |
+| Create-HostGroup | Name | comment, hostIds, hostsToCreate  | ansible-playbook Create-HostGroup.yaml -e '{"hostgroupName": "KVMcluster", "comment":"Thomas Beha", "hostIds":["c81bc3f1f296b54a83450f32616f7a33","82a98411f506f648c114fd5b913bc8a8","e9cc50a6b7dadbbf514f3a02196a6596"]}' |
+| Create-Initiator | address - Initiator address, protocol - FC/iSCSI/NVMe  | ipAddress, Name |  ansible-playbook Create-Initiato.yaml -e "Address=' ' Protocol=' '..." |
+| Create-Snapshot | VolumeName, NamePattern - Name pattern: "PARENT_TIMESTAMP", "PARENT_SEC_SINCE_EPOCH", "CUSTOM" | Comment - string or null, CustomName - Snapshot Name or null, ExpireSecs - Expiration time ins seconds, ReadOnly - Boolean, RetainSecs / Retention time in seconds  | ansible-playbook Create-Snapshot.yaml -e "VolumeName='AnsibleTestVolume_01' ..." |
+| Create-Volume | SystemName  name of the storage system, VolumeName  name of the volume | Size - Size (in MiB) of the volume to be created (116384 MiB=16GiB), CPG - User CPG (SSD_r6), Comment, Count (1), DataReduction (true), UserAllocWarning (5), SnapshotAllocWarning (5) | ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"  |
+| Delete-HostGroup | hostgroupName | Force (true) | ansible-playbook Create-HostGRoup -e "hostgroupName=' ' Force='true'"  |
+| Delete-Initiator | initiatorId | Force  (true) | ansible-playbook Delete-Initiator -e "initiatorId=' '"  |
+| Delete-Volume-Snapshot | VolumeName, SnapshotName | | ansible-playbook Delete-Volume-Snapshot.yaml -e "VolumeName='...' SnapshotName='...'" |
+| Delete-Volume | VolumeName | Unexport (true), Cascade (true) | ansible-playbook DeleteVolume.yaml -e "VolumeName='<volumeName>'"  |
+| Export-Volume-Snapshot | VolumeName, SnapshotName, HostGroupName  |  | ansible-playbook Export-Volume-Snapshot.yaml -e "VolumeName=' '..." |
+| Export-Volume | VolumeName, HostGroupName | LUN - Custom LUN Id for multiple host groups (Array of objects or null), autoLun (true), maxAutoLun, proximity - Host proximity setting for Active Peer Persistence configuration (__PRIMARY__ , SECONDARY, ALL) | ansible-playbook Export-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>" |
+| UnExport-Volume-Snapshot | SnapshotName, HostGroupName  |  |  |
+| UnExport-Volume | VolumeName, HostGroupName |  | ansible-playbook UnExport-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>" |
+| Update-HostGroup | hostgroupName | hostsToCreate - list of hosts to be added to the group, updatedHosts - Array of strings or null; list of host ids added to the group, removedHosts - Array of strings or null; list of host ids to be removed from group, hostProximity - Array of object or null; change proximity for list of hosts | ansible-playbook Update-HostGroup.yaml -e '{"updatedHosts":"host1","removedHosts":"host2","hostProximity":[{"groupName": "RCGName", "groupUid":"rcg1"}],"hostsToCreate":[{"initiatorIds":"id","name":"Hostname"}]}' |
+| Merge-Duplicates |  |  | ansible-playbook Merge-Duplicates.yaml |
+| Show-Data | filename |  | ansible-playbook Show-Data.yaml -e "filename='storage.json'" |
+| Search-Data | filename, searchKey |  | ansible-playbook Search-Data.yaml -e "filename='volumes.json' searchKey='MVMn1'" |
 
 
 

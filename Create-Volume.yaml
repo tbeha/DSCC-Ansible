@@ -6,7 +6,7 @@
   #   SystemName  name of the storage system
   #   VolumeName  name of the volume
   # Optional Parameter
-  #   Size        Size (in MiB) of the volume to be created. Default value: 1024 (1GiB)
+  #   Size        Size (in MiB) of the volume to be created. Default value: 16384 (16GiB)
   #   CPG         User CPG. Default: SSD_r6
   #   Comment     
   #   Count                 volumes count, default: 1
@@ -25,7 +25,7 @@
       userCpg: "SSD_r6"
       count: "1"
       dataReduction: true
-      sizeMib: "1024"
+      sizeMib: "16384"
       userAllocWarning: "5" 
       snapshotAllocWarning: "5"
   tasks:
