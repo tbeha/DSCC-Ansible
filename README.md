@@ -7,8 +7,8 @@ The DSCC API documentation can be found at: https://console-us1.data.cloud.hpe.c
 
 Common tasks are stored in the following base playbooks:
 
-| Basic Playbook    | Required Parameter                   | Optional Parameter       | Description           | 
-|-------------------|--------------------------------------|--------------------------|-----------------------|
+| Basic Playbook    | Required Parameter                   | Optional Parameter       | Description                                                                       | 
+|-------------------|--------------------------------------|--------------------------|-----------------------------------------------------------------------------------|
 |DSCC-API-Call | requestUri: the request URL          | body: the request body   |issues a REST API call |
 |                   | method: the request method (GET, POST, DELETE, PUT)   |       |           |
 |DSCC-API-401 | requestUri: the request URL          | body: the request body   |Gets a new access token and issues a REST API Call|
