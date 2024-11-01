@@ -1,0 +1,41 @@
+---
+- name: Restore-Volume-Snapshot
+# Required Parameter
+#   VolumeName
+#   SnapshotName
+# ansible-playbook Export-Volume-Snapshot.yaml -e "VolumeName=' '..."
+  hosts: localhost
+
+- name: Get Volume Snapshot
+  ansible.builtin.import_playbook: Get-Volume-Snapshots.yaml
+
+- name: Restore Snapshots
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "{{ myvol.resourceUri }}/snapshots/{{ snapshot.id }}"
+  tasks:
+
+    - name: Check Snapshot Name and set URL
+      vars:
+        key: "{{ SnapshotName }}"
+      ansible.builtin.set_fact:
+        snapshot: "{{ snapshots[key] }}"
+      when: SnapshotName is defined and SnapshotName != ""
+
+    - name: DSCC API Call 
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Volume"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 
+

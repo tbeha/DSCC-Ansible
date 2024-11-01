@@ -13,6 +13,17 @@
   vars:
     method: "GET"
   tasks:
+
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', 'volumes.json' ) | from_json }}"
+
+    - name: Get volume
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
+
     - name: Check Snapshot Name and set URL
       vars: 
         key: "{{ SnapshotName }}"

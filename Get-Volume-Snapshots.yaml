@@ -39,7 +39,7 @@
         snapshots: "{{ snapshots | combine({item.name: {
           'id': item.id,
           'systemId': item.systemId
-          } }) 
+          } })
         }}"
       with_items: "{{ response.json['items'] }}"
 
