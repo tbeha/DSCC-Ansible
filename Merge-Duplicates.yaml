@@ -1,10 +1,10 @@
 ---
-- name: Get Duplicates 
+- name: Merge Duplicates 
   # v1 09/27/2029 Thomas Beha
   #
   # Parameter:
   #
-  # ansible-playbook Get-Host-Duplicates.yaml
+  # ansible-playbook Merge-Duplicates.yaml
 
   hosts: localhost
   vars:

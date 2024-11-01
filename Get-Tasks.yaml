@@ -4,7 +4,7 @@
   # Retrieves the list of the host groups in the DSCC and stores it in host_groups.json
   #
   # Parameter:
-  #   TaskId
+  #   
   # Output: stored in tasks/taskid.json
   # Output format:
   #   {
