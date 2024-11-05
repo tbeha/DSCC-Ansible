@@ -32,10 +32,6 @@
         body: "{{ body | combine({ 'ipAddress':'{{ IpAddress }}' }) }}"
       when: IpAddress is defined and IpAddress != ""
 
-    - name: Get Access Token
-      ansible.builtin.set_fact:
-        token: "{{ lookup('file', 'token.txt') }}"
-
     - name: DSCC API Call GET storage systems
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml

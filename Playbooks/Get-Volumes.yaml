@@ -62,7 +62,7 @@
     - name: Store the volumes List
       ansible.builtin.copy:
         content: "{{ volumes | to_json }}"
-        dest: "volumes.json"
+        dest: "../Outputs/volumes.json"
         mode: '0644'
 
     - name: Show results 

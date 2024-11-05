@@ -32,7 +32,7 @@
 
     - name: Retrieve storage systems list
       ansible.builtin.set_fact:
-        systems: "{{ lookup( 'file', 'systems.json') | from_json }}"
+        systems: "{{ lookup( 'file', '../Outputs/systems.json') | from_json }}"
 
     - name: Lookup system
       vars:

@@ -20,14 +20,10 @@
       ansible.builtin.set_fact:
         force: "{{ Force }}"
       when: Force is defined and Force != ""
-    
-    - name: Get Access Token
-      ansible.builtin.set_fact:
-        token: "{{ lookup('file', 'token.txt') }}"
 
     - name: Read host_groups.json
       ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', 'host_groups.json') }}"
+        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
 
     - name: Get hostgroup id
       vars:

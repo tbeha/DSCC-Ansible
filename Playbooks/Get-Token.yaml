@@ -34,7 +34,7 @@
 - name: Store Token
   ansible.builtin.copy:
     content: "{{ token }}"
-    dest: token.txt
+    dest: 'vars/token.txt'
     mode: "0644"
 
 - name: Debug

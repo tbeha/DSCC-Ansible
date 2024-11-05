@@ -15,7 +15,7 @@
 
     - name: Read host_groups.json
       ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', 'host_groups.json') }}"
+        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
 
     - name: Get hostgroup id and set the uri
       vars:
@@ -35,7 +35,7 @@
     - name: Store the data in a file
       ansible.builtin.copy:
         content: "{{ response.json | to_json }}"
-        dest: "hg-{{ HostGroupName }}.json"
+        dest: "../Outputs/hg-{{ HostGroupName }}.json"
         mode: '0644'
 
     - name: Show result.status

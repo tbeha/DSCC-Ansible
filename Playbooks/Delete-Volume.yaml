@@ -31,7 +31,7 @@
 
     - name: Read Volume List
       ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', 'volumes.json' ) | from_json }}"
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
 
     - name: Get Volume
       vars:

@@ -18,7 +18,7 @@
   tasks:
     - name: Read host_groups.json
       ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', 'host_groups.json') }}"
+        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
 
     - name: Get hostgroup
       vars:

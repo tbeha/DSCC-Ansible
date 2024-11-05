@@ -43,5 +43,5 @@
     - name: Store the Host Groups List
       ansible.builtin.copy:
         content: "{{ host_groups | to_json }}"
-        dest: host_groups.json
+        dest: '../Outputs/host_groups.json'
         mode: '0644'

@@ -23,7 +23,7 @@
     - name: Store the  duplicates list
       ansible.builtin.copy:
         content: "{{ response.json['items']| to_json }}"
-        dest: duplicates.json
+        dest: '../Outputs/duplicates.json'
         mode: '0644'
 
     - name: Display result

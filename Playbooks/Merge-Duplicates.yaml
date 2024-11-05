@@ -15,7 +15,7 @@
     - name: Get Duplicates List
       ansible.builtin.set_fact:
         body: 
-          items: "{{ lookup('file', 'duplicates.json') }}"
+          items: "{{ lookup('file', '../Outputs/duplicates.json') }}"
 
     - name: DSCC API Call
       ansible.builtin.include_tasks:

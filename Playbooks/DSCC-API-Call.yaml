@@ -25,7 +25,7 @@
 
 - name: Get Access Token
   ansible.builtin.set_fact:
-    token: "{{ lookup('file', 'token.txt') }}"
+    token: "{{ lookup('file', 'vars/token.txt') }}"
 
 - name: Check the Methood 
   ansible.builtin.fail:

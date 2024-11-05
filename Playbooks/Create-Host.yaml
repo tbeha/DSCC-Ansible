@@ -85,10 +85,6 @@
         body: "{{ body | combine({ 'subnet':'{{ subnet }}' }) }}"
       when: subnet is defined and subnet != ""
 
-    - name: Get Access Token
-      ansible.builtin.set_fact:
-        token: "{{ lookup('file', 'token.txt') }}"
-
     - name: DSCC API Call
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml

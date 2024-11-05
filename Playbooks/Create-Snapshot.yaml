@@ -26,7 +26,7 @@
   tasks:
     - name: Read volume list
       ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', 'volumes.json' ) | from_json }}"
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
 
     - name: Get volume
       vars:

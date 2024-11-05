@@ -48,7 +48,7 @@
     - name: Store the Systems List
       ansible.builtin.copy:
         content: "{{ storage_systems| to_json }}"
-        dest: systems.json
+        dest: '../Outputs/systems.json'
         mode: '0644'
 
     - name: Show result.status

@@ -20,7 +20,7 @@
 
     - name: Get storage systems from systems.json
       ansible.builtin.set_fact:
-        systems: "{{ lookup('file', 'systems.json') | from_json}}"
+        systems: "{{ lookup('file', '../Outputs/systems.json') | from_json}}"
 
     - name: Lookup system
       vars:
@@ -54,7 +54,7 @@
     - name: Store the volumes List
       ansible.builtin.copy:
         content: "{{ volumes | to_json }}"
-        dest: "{{ SystemName }}.volumes.json"
+        dest: "../Outputs/{{ SystemName }}.volumes.json"
         mode: '0644'
 
     - name: Show Results

@@ -20,10 +20,6 @@
       ansible.builtin.set_fact:
         force: "{{ Force }}"
       when: Force is defined and Force != ""
-      
-    - name: Get Access Token
-      ansible.builtin.set_fact:
-        token: "{{ lookup('file', 'token.txt') }}"
     
     - name: DSCC API Call
       ansible.builtin.include_tasks:
