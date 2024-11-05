@@ -57,7 +57,6 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Search-Data | filename, searchKey |  | ansible-playbook Search-Data.yaml -e "filename='volumes.json' searchKey='MVMn1'" |
 
 
-
 ## Contact
 Thomas Beha - t.beha@t-online.de
 
