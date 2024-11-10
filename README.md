@@ -52,9 +52,9 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | UnExport-Volume | VolumeName, HostGroupName |  | ansible-playbook UnExport-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>" |
 | Update-HostGroup | hostgroupName | hostsToCreate - list of hosts to be added to the group, updatedHosts - Array of strings or null; list of host ids added to the group, removedHosts - Array of strings or null; list of host ids to be removed from group, hostProximity - Array of object or null; change proximity for list of hosts | ansible-playbook Update-HostGroup.yaml -e '{"updatedHosts":"host1","removedHosts":"host2","hostProximity":[{"groupName": "RCGName", "groupUid":"rcg1"}],"hostsToCreate":[{"initiatorIds":"id","name":"Hostname"}]}' |
 | Merge-Duplicates |  |  | ansible-playbook Merge-Duplicates.yaml |
+| Restore-Volume-Snapshot | VolumeName, SnapshotName | | Restores the volume (identified by __VolumeName__) with the snapshot identified by __SnapshotName__ |
 | Show-Data | filename |  | ansible-playbook Show-Data.yaml -e "filename='storage.json'" |
 | Search-Data | filename, searchKey |  | ansible-playbook Search-Data.yaml -e "filename='volumes.json' searchKey='MVMn1'" |
-
 
 
 ## Contact

@@ -1,0 +1,32 @@
+---
+- name: Merge Duplicates 
+  # v1 09/27/2029 Thomas Beha
+  #
+  # Parameter:
+  #
+  # ansible-playbook Merge-Duplicates.yaml
+
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "/api/v1/host-initiator-groups/bulkmerge"
+  tasks:
+
+    - name: Get Duplicates List
+      ansible.builtin.set_fact:
+        body: 
+          items: "{{ lookup('file', '../Outputs/duplicates.json') }}"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Display result
+      ansible.builtin.debug:
+        var: response
+        

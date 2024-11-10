@@ -1,0 +1,60 @@
+---
+- name: UnExport volume
+# UnExport Volume playbook
+# v2.0 10/21/2024 Thomas Beha
+#
+# Parameters:
+#   VolumeName - name of volume that should be exported
+#   HostGroupName - name of the hostgroup the volume should be exported to
+#  
+# Run command:
+#   ansible-playbook UnExport-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>"
+#
+  hosts: localhost
+  vars:
+    method: "POST"
+    request_uri: "{{ myvol['resourceUri'] }}/un-export"
+  tasks:
+
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
+
+    - name: Get volume
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
+
+    - name: Read host_groups.json
+      ansible.builtin.set_fact:
+        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
+
+    - name: Get hostgroup
+      vars:
+        key: "{{ HostGroupName }}"
+      ansible.builtin.set_fact:
+        hostgroup:
+          - "{{ host_groups[key] }}"
+
+    - name: Set body
+      ansible.builtin.set_fact:
+        body:
+          hostGroupIds: "{{ hostgroup }}"
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show Results
+      vars:
+        elements: dscs_hosts
+        elementname: "Unexport Volume"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml

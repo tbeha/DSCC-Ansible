@@ -1,0 +1,60 @@
+---
+- name: Get Initiators
+  # v1 09/26/2029 Thomas Beha
+  # Retrieves the list of initiators
+  # Parameters
+  #   limit
+  #   offset
+  #
+  # ansible-playbook Get-Initiators
+
+  hosts: localhost
+  vars:
+    offset: "0"
+    limit: "250"
+    method: "GET"
+    request_uri: "/api/v1/initiators?offset={{ offset}}&limit={{ limit }}"
+  tasks:
+
+    - name: Check for Offset
+      ansible.builtin.set_fact:
+        offset: "{{  Offset }}"
+      when: Offset is defined and Offset != ""
+
+    - name: Check for Limit
+      ansible.builtin.set_fact:
+        limit: "{{  Limit }}"
+      when: Limit is defined and Limit != ""
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize Initiators dictionary
+      ansible.builtin.set_fact:
+        initiators: "{{ inititiators | default({}) }}"
+
+    - name: Loop through Response
+      ansible.builtin.set_fact:
+        initiators: "{{ initiators | combine({item.address: item.id}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Store the Initiators List
+      ansible.builtin.copy:
+        content: "{{ initiators | to_json }}"
+        dest: '../Outputs/initiators.json'
+        mode: '0644'
+
+    - name: Show result.status
+      vars:
+        elements: "{{ initiators }}"
+        elementname: "Initiator"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml
+

@@ -1,0 +1,76 @@
+---
+- name: Delete Volume Snapshot
+  # v1 10/07/2029 Thomas Beha
+  #
+  # Parameter:
+  #   VolumeName
+  #   SnapshotName
+  #
+  # ansible-playbook Delete-Volume-Snapshot.yaml -e "VolumeName='...' SnapshotName='...'"
+
+
+  hosts: localhost
+  vars:
+    
+  tasks:
+
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json') | from_json }}"
+
+    - name: Get volume
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
+
+    - name: Set API Call Parameter
+      ansible.builtin.set_fact:
+        method: "GET"
+        request_uri: "{{ myvol.resourceUri }}/snapshots"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize Snapshot dictionary
+      ansible.builtin.set_fact:
+        snapshots: "{{ snapshots | default({}) }}"
+
+    - name: Loop through Response
+      ansible.builtin.set_fact:
+        snapshots: "{{ snapshots | combine({item.name: item.id}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Get snapshot id
+      vars:
+        key: "{{ SnapshotName }}"
+      ansible.builtin.set_fact:
+        snapshotid: "{{ snapshots[key] }}"
+
+    - name: Set API Call Parameter
+      ansible.builtin.set_fact:
+        method: "DELETE"
+        request_uri: "{{ myvol.resourceUri }}/snapshots/{{ snapshotid }}"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show results 
+      vars:
+        elementname: "Snapshot"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 
+

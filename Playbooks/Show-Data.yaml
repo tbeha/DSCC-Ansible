@@ -1,0 +1,19 @@
+---
+- name: Show Data
+  # v1 09/26/2029 Thomas Beha
+  # Displays the dictionary stored in the file {{filename}}
+  #
+  # ansible-playbook Show-Data.yaml --extra-vars "filename=<filename>"
+
+  hosts: localhost #suo04tlb002
+  vars:
+    base_url: "https://eu1.data.cloud.hpe.com"
+  tasks:
+
+    - name: Read the dictionary from file 
+      ansible.builtin.set_fact:
+        data: "{{ lookup('file', '../Outputs/{{filename}}') }}"
+
+    - name: Display the data 
+      ansible.builtin.debug:
+        var: data

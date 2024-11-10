@@ -1,0 +1,47 @@
+---
+- name: Get HostGroups
+  # v1 09/26/2029 Thomas Beha
+  # Retrieves the list of the host groups in the DSCC and stores it in host_groups.json
+  #
+  # Parameter: none
+  # Output: storage in host_groups.json
+  # Output format:
+  #   {
+  #     <hostgroup.name>: <hostgroup.id>,
+  #     ...
+  #   }
+  #
+  # Run command: ansible-playbook Get-HostGroups.yaml
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/host-initiator-groups"
+  tasks:
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Initialize host_groups dictionary if not defined
+      ansible.builtin.set_fact:
+        host_groups: "{{ host_groups | default({}) }}"
+
+    - name: Loop through response
+      ansible.builtin.set_fact:
+        host_groups: "{{ host_groups | combine({item.name: item.id}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Display the Host Groups List
+      ansible.builtin.debug:
+        var: host_groups
+
+    - name: Store the Host Groups List
+      ansible.builtin.copy:
+        content: "{{ host_groups | to_json }}"
+        dest: '../Outputs/host_groups.json'
+        mode: '0644'

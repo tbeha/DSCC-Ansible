@@ -1,0 +1,74 @@
+---
+- name: Create HostGroup
+  # v2 10/22/2029 Thomas Beha
+  #
+  # Parameter:
+  #   hostgroupName
+  # Optional:
+  #   hostsToCreate - list of hosts to be added to the group
+  #   updatedHosts - Array of strings or null; list of host ids added to the group
+  #   removedHosts - Array of strings or null; list of host ids to be removed from group
+  #   hostProximity - Array of object or null; change proximity for list of hosts
+  #
+  #  ansible-playbook Update-HostGroup.yaml -e '{"updatedHosts":"host1","removedHosts":"host2",
+  #                 "hostProximity":[{"groupName": "RCGName", "groupUid":"rcg1"}],
+  #                 "hostsToCreate":[{"initiatorIds":"id","name":"Hostname"}]}'
+  #
+
+  hosts: localhost
+  vars:
+    method: "PUT"
+    request_uri: "/api/v1/host-initiator-groups/{{ hostgroupid }}"
+    body:
+      hostupdate: ""
+      hostremove: ""
+      hosttocreate: ""
+      proximity: ""
+  tasks:
+
+    - name: Read host_groups.json
+      ansible.builtin.set_fact:
+        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
+
+    - name: Get hostgroup id
+      vars:
+        key: "{{ HostGroupName }}"
+      ansible.builtin.set_fact:
+        hostgroupid: "{{ host_groups[key] }}"
+
+    - name: Check for updated hosts
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hostupdate':'{{  updatedHosts }}' }) }}"
+      when: updatedHosts is defined and updatedHosts != ""
+
+    - name: Check for removed hosts
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hostremove': '{{  removedHosts }}' }) }}"
+      when: removedHosts is defined and removedHosts != ""
+
+    - name: Check for proximity changes
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'proximity':'{{  hostProximity }}' }) }}"
+      when: hostProximity is defined and hostProximity != ""
+
+    - name: Check for Hosts to create
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({ 'hosttocreate':'{{  hostsToCreate }}' }) }}"
+      when: hostsToCreate is defined and hostsToCreate != ""
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Show Results
+      vars:
+        elements: dscs_hosts
+        elementname: "Unexport Volume"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml
