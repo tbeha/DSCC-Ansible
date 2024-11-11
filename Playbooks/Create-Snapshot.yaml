@@ -4,8 +4,9 @@
   #
   # Required Parameter:
   #   VolumeName
-  #   NamePattern - Name pattern: "PARENT_TIMESTAMP", "PARENT_SEC_SINCE_EPOCH", "CUSTOM"
+  #   
   # Optional Parameter:
+  #   NamePattern - Name pattern: "PARENT_TIMESTAMP", "PARENT_SEC_SINCE_EPOCH", "CUSTOM"
   #   Comment - string or null 
   #   CustomName - Snapshot Name or null
   #   ExpireSecs - Expiration time ins seconds

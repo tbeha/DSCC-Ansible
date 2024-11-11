@@ -41,7 +41,7 @@
         limit: "{{  Limit }}"
       when: Limit is defined and Limit != ""
 
-    - name: DSCC API Call GET storage systems
+    - name: DSCC API Call GET Data
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
@@ -54,7 +54,7 @@
       ansible.builtin.set_fact:
         volumes: "{{ volumes | default({}) }}"
 
-    - name: Loop through Systems
+    - name: Loop through Volumes
       ansible.builtin.set_fact:
         volumes: "{{ volumes | combine({item.name: {'id': item.id, 'resourceUri': item.resourceUri, 'systemId':item.systemId}}) }}"
       with_items: "{{ response.json['items'] }}"
