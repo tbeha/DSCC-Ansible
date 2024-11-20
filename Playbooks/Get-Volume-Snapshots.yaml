@@ -9,19 +9,9 @@
   hosts: localhost
   vars:
     method: "GET"
-    request_uri: "{{ myvol.resourceUri }}/snapshots"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
-    - name: Read volume list
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json') | from_json }}"
-
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
-      ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
-
-    - name: DSCC API Call
+    - name: DSCC API Call - Get Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
@@ -30,17 +20,21 @@
         file: DSCC-API-401.yaml
       when: status == '401'
 
+    - name: Set resourceURI      
+      ansible.builtin.set_fact:
+        request_uri: "{{ result.json['items'][0].resourceUri }}/snapshots"
+
+    - name: DSCC API Call Get Volume Snapshots
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
     - name: Initialize Snapshot dictionary
       ansible.builtin.set_fact:
         snapshots: "{{ snapshots | default({}) }}"
 
-    - name: Loop through Systems
+    - name: Loop through Snaspshots
       ansible.builtin.set_fact:
-        snapshots: "{{ snapshots | combine({item.name: {
-          'id': item.id,
-          'systemId': item.systemId
-          } })
-        }}"
+        snapshots: "{{ snapshots | combine({item.name: {'id': item.id, 'systemId':item.systemId}}) }}"
       with_items: "{{ response.json['items'] }}"
 
     - name: Show results
