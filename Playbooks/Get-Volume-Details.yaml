@@ -1,6 +1,6 @@
 ---
 - name: Get Volume Details
-  # v1 09/28/2029 Thomas Beha
+  # v2 11/20/2024 Thomas Beha
   #
   # Parameter:
   #   VolumeName
@@ -11,19 +11,9 @@
   hosts: localhost
   vars:
     method: "GET"
-    request_uri: "{{ myvol.resourceUri }}"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
-    - name: Read volume list
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
-
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
-      ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
-
-    - name: DSCC API Call
+    - name: DSCC API Call - Get Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
@@ -32,9 +22,24 @@
         file: DSCC-API-401.yaml
       when: status == '401'
 
+    - name: Set resourceURI      
+      ansible.builtin.set_fact:
+        request_uri: "{{ result.json['items'][0].resourceUri }}"
+
+    - name: DSCC API Call - Get Volume Details
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Store the data in a file
+      ansible.builtin.copy:
+        content: "{{ response.json | to_json }}"
+        dest: "../Outputs/{{ VolumeName }}.json"
+        mode: '0644'
+
+
     - name: Show results 
       vars:
         elementname: "{{VolumeName}}: "
         result: "{{ response }}"
       ansible.builtin.include_tasks:
-        file: DisplayResults.yaml    
+        file: DisplayResults.yaml   

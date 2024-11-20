@@ -1,0 +1,63 @@
+---
+- name: Get All VolumeSet Details
+  # Playbook: Get all volumes
+  # v1 09/26/2029 Thomas Beha
+  # Retrieves of DSCC managed volumes
+  #
+  # Parameter: 
+  #   VolumeSetName
+  # Ouput: stored in "{{VolumeSetName}}.json"
+  # Output format:
+  #   {
+  #     <volume.name>: {
+  #        id: volume.id,
+  #        resourceUri: volume.resourceUri
+  #      },
+  #      ...
+  #      <volume.name>: {
+  #        ...
+  #      }
+  #   }
+  #
+  # Run Command:
+  #   ansible-playbook Get-VolumeSet-Details.yaml -e "VolumeSetName='<vvset name>'"
+
+  hosts: localhost
+  vars:
+    offset: "0"
+    limit: "250"
+    method: "GET"
+    request_uri: "/api/v1/volume-sets?limit={{ limit }}&offset={{ offset }}&filter=name%20eq%20'{{VolumeSetName}}'"
+  tasks:
+
+    - name: Check for Offset
+      ansible.builtin.set_fact:
+        offset: "{{  Offset }}"
+      when: Offset is defined and Offset != ""
+
+    - name: Check for Limit
+      ansible.builtin.set_fact:
+        limit: "{{  Limit }}"
+      when: Limit is defined and Limit != ""
+
+    - name: DSCC API Call GET Data
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Store the volumesets List
+      ansible.builtin.copy:
+        content: "{{ response.json['items'] | to_json }}"
+        dest: "../Outputs/{{VolumeSetName}}.json"
+        mode: '0644'
+
+    - name: Show results 
+      vars:
+        elementname: "Volumesets"
+        result: "{{ response }}"
+      ansible.builtin.include_tasks:
+        file: DisplayResults.yaml 
