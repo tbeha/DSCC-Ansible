@@ -31,7 +31,7 @@
       ansible.builtin.set_fact:
         hostgroupid: "{{ host_groups[key] }}"
 
-    - name: Delete HostGroup"
+    - name: Delete HostGroup
     - name: DSCC API Call
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml

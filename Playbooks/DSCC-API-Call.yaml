@@ -21,7 +21,7 @@
 #   default: unexpected error
 #
 - name: Include encrypted vars
-  include_vars: credentials.yml
+  include_vars: vars/credentials.yml
 
 - name: Get Access Token
   ansible.builtin.set_fact:
