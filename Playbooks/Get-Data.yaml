@@ -1,0 +1,35 @@
+- name: Get Data 
+# Playbook get the list of storage systems registered in the DSCC
+# (c) Thomas Beha, v2.0, 10/13/2024
+# The playbook retrieves all storage systems of an DSCC and stores a dictionary of the storage systems in systems.json
+# Storage systems dictionary:
+#   <system name>: {
+#       system id,
+#       resourceUri
+#   }
+#
+# Parameter:
+#  request_uri
+#
+# Output file: systems.json
+#
+# Run Command: ansible-playbook Get-StorageSystems.yaml
+#
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "{{ URL }}"
+  tasks:
+
+    - name: DSCC API Call GET storage systems
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Display result
+      ansible.builtin.debug:
+        var: response 

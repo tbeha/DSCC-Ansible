@@ -1,0 +1,73 @@
+---
+- name: Get Details of a Storage System
+  # Get the volumes of a storage system identified by the system name
+  # v2.0 10/13/2024 Thomas Beha
+  # Parameter:
+  #   SystemName  - name of the Storage system
+  #
+  # Accessed data file:
+  #   systems.json
+  #
+  # Run command:
+  #   ansible-playbook Get-System-Details.yaml -e "SystemName='<systemname>'"
+  #
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "{{ storage['resourceUri'] }}"
+  tasks:
+
+    - name: Get storage systems from systems.json
+      ansible.builtin.set_fact:
+        systems: "{{ lookup('file', '../Outputs/systems.json') | from_json}}"
+
+    - name: Lookup system
+      vars:
+        key: "{{ SystemName }}"
+      ansible.builtin.set_fact:
+        storage: "{{ systems[key] }}"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Store the Basic System Details
+      ansible.builtin.set_fact:
+        system: "{{ response.json }}"
+
+    - name: Store the System Details
+      ansible.builtin.copy:
+        content: "{{ system | to_json }}"
+        dest: "../Outputs/{{ SystemName }}.json"
+        mode: '0644'
+
+    - name: Initialize Link Dictionary
+      ansible.builtin.set_fact:
+        links: "{{ links  | default( {} ) }}"
+
+    - name: Loop through Response
+      ansible.builtin.set_fact:
+        links: "{{ links | combine({item.type: item.resourceUri}) }}"
+      with_items: "{{ response.json['associatedLinks'] }}"    
+
+    - name: Save Link dictionary
+      ansible.builtin.copy:
+        content: "{{links | to_json}}"
+        dest: "../Outputs/{{SystemName}}.Links.json"
+        mode: '0644'
+    
+    - name: Loop Links
+      vars: 
+      ansible.builtin.include_tasks:
+        file: Loop-Links.yaml
+      with_dict: "{{links}}"
+
+    - name: Display Systems
+      ansible.builtin.debug:
+        var: system
+  

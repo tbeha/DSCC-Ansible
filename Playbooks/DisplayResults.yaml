@@ -8,7 +8,7 @@
     var: elements
   when: elements is defined
 
-- name: Write number of Initiators
+- name: Write Elements
   ansible.builtin.debug:
     msg: "Number of {{ elementname }}: {{ result.json['total'] }}  pageLimit: {{ result.json['pageLimit'] }}"
   when: result.json['total'] is defined and result.json['pageLimit'] is defined

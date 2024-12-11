@@ -1,0 +1,19 @@
+- name: Set URI
+  ansible.builtin.set_fact:
+    request_uri: "{{item.value}}"
+- name: Display URI
+  ansible.builtin.debug:
+    var: request_uri
+- name: DSCC API Call GET storage systems
+  vars: 
+    method: "GET"
+  ansible.builtin.include_tasks:
+    file: DSCC-API-Call.yaml
+- name: Display result
+  ansible.builtin.debug:
+    var: response 
+- name: Save Result
+  ansible.builtin.copy:
+    content: "{{response | to_json}}"
+    dest: "../Outputs/{{SystemName}}.{{item.key}}.json"
+    mode: '0644'  
