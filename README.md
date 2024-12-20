@@ -57,6 +57,19 @@ The base playbooks are used by the task specific playbooks. The following tasks 
 | Search-Data | filename, searchKey |  | ansible-playbook Search-Data.yaml -e "filename='volumes.json' searchKey='MVMn1'" |
 
 
+Besides these common tasks a complete DSCC Capture is available too. This includes the following components of the repository:
+
+| Playbook          | Description                    | Required Parameter  |
+|-------------------|------------------------------|-----------------|
+| Capture-Systems.yaml | The DSCC capture script. That calls some subroutines. The results are stored in multiple json files |            |
+|  DSCC-API-Call    | the calling routins providing the necessary parameter for the API calls | base_url and access credentials stored in an Ansible vault file vars/credentials.yml |
+|  Loop-Systems.yaml | loops through all known storage systems of the DSCC | |
+|  Loop-Links.yaml | loops through all associated links of a storage system. This routine is called in Loop-Systems.yaml | |
+|  GetAllSystemsVolumes.yaml | retrieves the information of all volumes of a storage system. | |
+|  GetAllHosts.yaml | retrieves all known DSCC hosts | |
+|  GetAllHostGroups.yaml | retrieves all known DSCC hostgroups | |
+
+
 ## Contact
 Thomas Beha - t.beha@t-online.de
 
