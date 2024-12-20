@@ -33,3 +33,9 @@
     - name: Display result
       ansible.builtin.debug:
         var: response 
+
+    - name: Store the Resuls List
+      ansible.builtin.copy:
+        content: "{{ response.json| to_json }}"
+        dest: "../Outputs/{{ SystemName }}.{{dataname}}.json"
+        mode: '0644'

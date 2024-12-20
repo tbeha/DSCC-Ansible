@@ -37,7 +37,7 @@
     msg: "DSCC-API-Call: Request URI is not defined!"
   when: request_uri is not defined
 
-- name: DSCC Command
+- name: DSCC Command - {{request_uri}}
   ansible.builtin.uri:
     url: "{{ base_url }}{{ request_uri }}"
     headers:
@@ -45,7 +45,7 @@
       Content-Type: "application/json"
     method: "{{ method }}"
     validate_certs: false
-    status_code: [200, 201, 202, 401]
+    status_code: [200, 201, 202, 401, 404]
   register: result
   when: body is not defined
 
@@ -55,7 +55,7 @@
     tmpres: "{{ result }}"
   when: body is not defined
 
-- name: DSCC Command with body
+- name: DSCC Command with body {{request_uri}}
   ansible.builtin.uri:
     url: "{{ base_url }}{{ request_uri }}"
     headers:
@@ -65,7 +65,7 @@
     body_format: json
     body: "{{ body | to_json }}"
     validate_certs: false
-    status_code: [200, 201, 202, 401]
+    status_code: [200, 201, 202, 400, 401, 404]
   register: result2
   when: body is defined
 
@@ -79,3 +79,8 @@
   ansible.builtin.set_fact:
     response: "{{ tmpres }}"
   when: status in ['200', '201', '202','401']
+
+- name: Undefine Response when status not in [200...]
+  ansible.builtin.set_fact:
+    response: ""
+  when: status not in ['200', '201', '202','401']

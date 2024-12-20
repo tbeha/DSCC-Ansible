@@ -1,0 +1,22 @@
+- name: Set URI
+  ansible.builtin.set_fact:
+    request_uri: "{{system_uri}}/volumes"
+    method: "GET"
+- name: DSCC API Call Get Volumes 
+  ansible.builtin.include_tasks:
+    file: DSCC-API-Call.yaml
+- name: Increase Limits if needed
+  ansible.builtin.set_fact:
+    request_uri: "{{system_uri}}/volumes?limit={{response.json.total}}&offset=0" 
+  when: 
+    - response.json is defined 
+    - response.json.total > response.json.pageLimit
+- name:  Get All Volumes
+  ansible.builtin.include_tasks:
+    file: DSCC-API-Call.yaml
+  when: 
+    - response.json is defined  
+    - response.json.total > response.json.pageLimit
+
+
+  

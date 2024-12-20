@@ -1,19 +1,19 @@
 - name: Set URI
   ansible.builtin.set_fact:
-    request_uri: "{{item.value}}"
-- name: Display URI
-  ansible.builtin.debug:
-    var: request_uri
-- name: DSCC API Call GET storage systems
+    request_uri: "{{assocLink.value}}"
+- name: DSCC API GET {{request_uri}}
   vars: 
     method: "GET"
   ansible.builtin.include_tasks:
     file: DSCC-API-Call.yaml
-- name: Display result
-  ansible.builtin.debug:
-    var: response 
+  ignore_errors: yes
 - name: Save Result
   ansible.builtin.copy:
-    content: "{{response | to_json}}"
-    dest: "../Outputs/{{SystemName}}.{{item.key}}.json"
+    content: "{{response.json | to_nice_json}}"
+    dest: "../Outputs/{{SystemName}}.{{assocLink.key}}.json"
     mode: '0644'  
+  when: response.json is defined
+- name: Check Response
+  ansible.builtin.debug:
+    msg: "WARNING: No Response on {{request_uri}}"
+  when: response == ""

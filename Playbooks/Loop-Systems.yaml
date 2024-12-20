@@ -1,0 +1,43 @@
+- name: Set URI
+  ansible.builtin.set_fact:
+    request_uri: "{{my_system.value.resourceUri}}"
+    SystemName: "{{my_system.key}}"
+    system_uri: "{{my_system.value.resourceUri}}"
+- name: Get System Details {{SystemName}}
+  vars:
+    method: "GET"
+  ansible.builtin.include_tasks:
+    file: DSCC-API-Call.yaml
+- name: Store the System Details
+  ansible.builtin.copy:
+    content: "{{ response.json | to_nice_json }}"
+    dest: "../Outputs/{{ SystemName }}.json"
+    mode: '0644'
+
+- name: Initialize Associated Links Dictionary
+  ansible.builtin.set_fact:
+    links: "{{ links  | default( {} ) }}"
+- name: Create AssociatedLinks Dictionary
+  ansible.builtin.set_fact:
+    links: "{{ links | combine({item.type: item.resourceUri}) }}"
+  with_items: "{{ response.json['associatedLinks'] }}"
+  when: response.json['associatedLinks'] is defined
+
+- name: Loop Associated Links
+  vars: 
+  ansible.builtin.include_tasks:
+    file: Loop-Links.yaml
+  with_dict: "{{links}}"
+  loop_control:
+    loop_var: assocLink
+  when: links is defined
+
+- name: Get Complete Volume List
+  ansible.builtin.include_tasks:
+    file: GetAllSystemVolumes.yaml
+- name: Save Result
+  ansible.builtin.copy:
+    content: "{{response.json | to_nice_json}}"
+    dest: "../Outputs/{{SystemName}}.volumes.json"
+    mode: '0644'  
+  when: response.json is defined
