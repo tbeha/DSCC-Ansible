@@ -43,7 +43,7 @@
 
     - name: Store the Hosts List
       ansible.builtin.copy:
-        content: "{{ dscc_hosts | to_json }}"
+        content: "{{ dscc_hosts | to_nice_json }}"
         dest: '../Outputs/hosts.json'
         mode: '0644'
 

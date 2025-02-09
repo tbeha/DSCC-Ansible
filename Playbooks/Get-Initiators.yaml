@@ -46,7 +46,7 @@
 
     - name: Store the Initiators List
       ansible.builtin.copy:
-        content: "{{ initiators | to_json }}"
+        content: "{{ initiators | to_nice_json }}"
         dest: '../Outputs/initiators.json'
         mode: '0644'
 
