@@ -11,7 +11,7 @@
   ansible.builtin.copy:
     content: "{{response.json | to_nice_json}}"
     dest: "../Outputs/{{SystemName}}.{{assocLink.key}}.json"
-    mode: '0644'  
+    mode: '0600'  
   when: response.json is defined
 - name: Check Response
   ansible.builtin.debug:

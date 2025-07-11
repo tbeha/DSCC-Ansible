@@ -1,7 +1,0 @@
----
-- name: Example playbook using Morpheus Cypher
-  hosts: localhost
-  tasks:
-    - name: Retrieve secret from Morpheus Cypher
-      ansible.builtin.debug:
-        msg: "Test Morpheus Ansible"
