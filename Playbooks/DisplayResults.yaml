@@ -1,3 +1,15 @@
+---
+# v2 07/15/2026 Thomas Beha
+  #
+  # Displays the playbook results.
+  # this playbook is actually imported in other playbooks 
+  #   
+
+- name: Show Body
+  ansible.builtin.debug:
+    msg: "{{ body }}"
+  when: body is defined
+
 - name: Write response
   ansible.builtin.debug: 
     var: result

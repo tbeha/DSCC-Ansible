@@ -1,6 +1,6 @@
 ---
 - name: Create Volumes
-  # v1 09/27/2029 Thomas Beha
+  # v2 07/15/2026 Thomas Beha
   #
   # Required Parameter:
   #   SystemName  name of the storage system
@@ -11,23 +11,24 @@
   #   Comment     
   #   Count                 volumes count, default: 1
   #   DataReduction         default: true
-  #   UserAllocWarning      default 5
-  #   SnapshotAllocWarning  default: 5
+  #   Ransomware            default: true
+  #   UserAllocWarning      default 1
+  #   SnapshotAllocWarning  default: 1
   #
   # ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"
   hosts: localhost
   vars:
     method: "POST"
     request_uri: "{{ storage['resourceUri'] }}/volumes"
-    body:
-      name: "{{ VolumeName }}"
-      comments: "Thomas Beha - Ansible"
-      userCpg: "SSD_r6"
-      count: "1"
-      dataReduction: true
-      sizeMib: "16384"
-      userAllocWarning: "5" 
-      snapshotAllocWarning: "5"
+    name: "{{ VolumeName }}"
+    comment: "Thomas Beha - Ansible"
+    userCpg: "SSD_r6"
+    count: 1
+    dataReduction: true
+    ransomWare: true
+    size: 10240
+    userAllocWarning: 5 
+    snapshotAllocWarning: 5
   tasks:
 
     - name: Retrieve storage systems list
@@ -40,42 +41,57 @@
       ansible.builtin.set_fact:
         storage: "{{ systems[key] }}"
 
-    - name: Check CPG
+    - name: Check Volume Size
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'userCpg': '{{  CPG }}' }) }}"
-      when: CPG is defined and CPG != ""
-        
-    - name: Check Comment
-      ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'comments': '{{  Comment }}' }) }}"
-      when: Comment is defined and Comment != ""
+        size: "{{ Size }}" 
+      when: Size is defined and Size != ""
 
     - name: Check Count
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'count': '{{  Count }}' }) }}"
+        count: "{{  Count }}"
       when: Count is defined and Count != ""
 
     - name: Check DataReduction
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'dataReduction': '{{  DataReduction }}' }) }}"
+        dataReduction: "{{  DataReduction }}"
       when: DataReduction is defined and DataReduction != ""
 
-    - name: Check UserAllocWarning
+    - name: Check Ransomware
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'userAllocWarning': '{{  UserAllocWarning }}' }) }}"
-      when: UserAllocWarning is defined and UserAllocWarning != ""
+        ransomWare: "{{  RansomWare }}"
+      when: RansomWare is defined and RansomWare != ""
 
-    - name: Check UserAllocWarning
+    - name: Check snapshotAllocWarning
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'snapshotAllocWarning': '{{  SnapshotAllocWarning }}' }) }}"
+        snapshotAlloc: "{{ SnapShotAllocWarning }}"
       when: SnapshotAllocWarning is defined and SnapshotAllocWarning != ""
 
-    - name: Check Volume Size
+    - name: Check userAllocWarning
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'sizeMib': '{{ Size }}'})}}"
-      when: Size is defined and Size != ""
+        userAllocWarning: "{{ SnapShotAllocWarning }}"
+      when: UserAllocWarning is defined and UserAllocWarning != ""
 
-    - name: DSCC API Call GET storage systems
+    - name: Write Request Body
+      ansible.builtin.copy:
+        dest: '../Outputs/variables.yaml'
+        mode: '0644'
+        content: |
+              body:
+                name: "{{ VolumeName }}"
+                comments: "{{ comment }}"
+                userCpg: "{{ userCpg }}"
+                count: {{count}}
+                dataReduction: {{ dataReduction }}
+                ransomware: {{ ransomWare }}
+                sizeMib: {{ size }}
+                userAllocWarning: {{ userAllocWarning }}
+                snapshotAllocWarning: {{ snapshotAllocWarning }}
+
+    - name: Read the Rest API Body
+      ansible.builtin.include_vars:
+        file: '../Outputs/variables.yaml'
+
+    - name: DSCC API Call Create Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 

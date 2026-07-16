@@ -1,0 +1,37 @@
+---
+- name: Test
+  # v1 09/27/2029 Thomas Beha
+  #
+  # Required Parameter:
+  #   SystemName  name of the storage system
+  #   VolumeName  name of the volume
+  # Optional Parameter
+  #   Size        Size (in MiB) of the volume to be created. Default value: 16384 (16GiB)
+  #   CPG         User CPG. Default: SSD_r6
+  #   Comment     
+  #   Count                 volumes count, default: 1
+  #   DataReduction         default: true
+  #   UserAllocWarning      default 5
+  #   SnapshotAllocWarning  default: 5
+  #
+  # ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"
+
+  hosts: localhost
+  vars:
+    method: "GET"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
+
+  tasks:
+
+    - name: DSCC API Call - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == '401'
+
+    - name: Display Result
+      ansible.builtin.debug:
+        msg: "{{ result }}" 

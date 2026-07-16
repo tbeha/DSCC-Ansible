@@ -1,13 +1,17 @@
 ---
-- name: Volume-Snapshot-Export
-# Required Parameter
-#   VolumeName
-#   SnapshotName
-#   HostGroupName
-# ansible-playbook Export-Volume-Snapshot.yaml -e "VolumeName=' '..."
-  hosts: localhost
-
-- name: Export Snapshots
+#- import_playbook: Get-Volumes.yaml 
+#- import_playbook: Get-HostGroups.yaml
+- name: Promote Snapshot playbook
+# Export Volume playbook
+# v1.0 9/27/2024 Thomas Beha
+#
+# Parameters:
+#   VolumeName - name of volume
+#   SnapshotName - name of the snapshot that should be promoted
+#
+# Run command:
+#   ansible-playbook Export-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>"
+#
   hosts: localhost
   vars:
     method: "GET"
@@ -23,7 +27,7 @@
         file: DSCC-API-401.yaml
       when: status == '401'
 
-    - name: Set resourceURI      
+    - name: Set to snapshot resourceURI      
       ansible.builtin.set_fact:
         request_uri: "{{ result.json['items'][0].resourceUri }}/snapshots"
 
@@ -45,44 +49,14 @@
         key: "{{ SnapshotName }}"
       ansible.builtin.set_fact:
         snapshot: "{{ snapshots[key] }}"
-      when: SnapshotName is defined and SnapshotName != "" 
-
-    - name: Read host_groups.json
-      ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') }}"
-
-    - name: Get hostgroup
-      vars:
-        key: "{{ HostGroupName }}"
-      ansible.builtin.set_fact:
-        hostgroup:
-          - "{{ host_groups[key] }}"
-
-    - name: Read systems.json
-      ansible.builtin.set_fact:
-        systems: "{{ lookup('file', '../Outputs/systems.json') }}"
-
-    - name: Search the systems list
-      vars:
-        key: "{{ item }}"
-      ansible.builtin.set_fact:
-        systemuri: "{{ systems[key].resourceUri }}"
-      with_items: "{{ systems }}"
-      when: systems[key].id == snapshot.systemId
-
-    - name: Build Body
-      ansible.builtin.set_fact:
-        body:
-          hostGroupIds: "{{ hostgroup }}"
-          autoLun: "true"
-      when: LUN is not defined
+      when: SnapshotName is defined and SnapshotName != ""
 
     - name: Set resourceURI      
       ansible.builtin.set_fact:
-        request_uri: "{{ systemuri}}/snapshots/{{ snapshot.id }}/export"
+        request_uri: "{{ systemuri}}/snapshots/{{ snapshot.id }}"
         method: "POST"
 
-    - name: DSCC API Call 
+    - name: DSCC API Call - Promote Snapshot 
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
@@ -93,8 +67,7 @@
 
     - name: Show results 
       vars:
-        elementname: "Volume"
+        elementname: "Promote Snapshot"
         result: "{{ response }}"
       ansible.builtin.include_tasks:
         file: DisplayResults.yaml 
-

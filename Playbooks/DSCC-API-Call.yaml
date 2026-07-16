@@ -82,5 +82,5 @@
 
 - name: Undefine Response when status not in [200...]
   ansible.builtin.set_fact:
-    response: ""
+    response: "{{status}} - {{tmpres}}"
   when: status not in ['200', '201', '202','401']

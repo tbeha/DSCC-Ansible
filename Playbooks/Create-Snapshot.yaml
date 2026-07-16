@@ -1,4 +1,5 @@
 ---
+#- import_playbook: Get-Volumes.yaml 
 - name: Get Create Snapshot
   # v1 10/07/2029 Thomas Beha
   #
@@ -21,9 +22,11 @@
   vars:
     method: "POST"
     request_uri: "{{ myvol.resourceUri }}/snapshots"
-    body:
-      namePattern: "PARENT_TIMESTAMP"
-      readOnly: "true"
+    expiration: 86400
+    retain: 86400
+    namePattern: "PARENT_TIMESTAMP"
+    comment: "Created by Thomas B. with Ansible"
+    readOnly: true
   tasks:
     - name: Read volume list
       ansible.builtin.set_fact:
@@ -36,38 +39,66 @@
         myvol: "{{ volumes[key] }}"
 
     - name: Check for Expiration
-      ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'expireSecs': '{{  ExpireSecs }}' }) }}"
+      ansible.builtin.set_fact: 
+        expiration: "{{  ExpireSecs }}"
       when: ExpireSecs is defined and ExpireSecs != ""
 
     - name: Check for Retentiontime
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'retainSecs': '{{  RetainSecs }}' }) }}"
+        retain: "{{  RetainSecs }}"
       when: RetainSecs is defined and RetainSecs != ""
 
     - name: Check for Name Pattern
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'namePattern': '{{  NamePattern }}' }) }}"
+        namePattern: "{{  NamePattern }}"
       when: NamePattern is defined and NamePattern != ""
 
     - name: Check for Comment
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'comment': '{{  Comment }}' }) }}"
+        comment: "{{  Comment }}"
       when: Comment is defined and Comment != ""
 
     - name: Check for ReadOnly
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'readOnly': '{{ ReadOnly }}' }) }}"
+        readOnly: "{{ ReadOnly }}"
       when: ReadOnly is defined and ReadOnly != ""
 
     - name: Check For Snapshot Name
-      vars:
-        update:
+      ansible.builtin.set_fact:
           customName: "{{ SnapshotName }}"
           namePattern: "CUSTOM"
-      ansible.builtin.set_fact:
-        body: "{{ body | combine( update ) }}"
       when: SnapshotName is defined and SnapshotName != ""
+
+    - name: Write Request Body with customName for saving the variable in the correct type
+      ansible.builtin.copy:
+        dest: '../Outputs/variables.yaml'
+        mode: '0644'
+        content: |
+              body:
+                comment: "{{ comment }}"
+                customName: "{{ customName }}"
+                namePattern: "{{ namePattern }}"
+                expireSecs: {{ expiration }}
+                retainSecs: {{ retain }}
+                readOnly: {{ readOnly }}
+      when: customName is defined
+
+    - name: Write Request Body without customName for saving the variable in the correct type
+      ansible.builtin.copy:
+        dest: '../Outputs/variables.yaml'
+        mode: '0644'
+        content: |
+              body:
+                comment: "{{ comment }}"
+                namePattern: "{{ namePattern }}"
+                expireSecs: {{ expiration }}
+                retainSecs: {{ retain }}
+                readOnly: {{ readOnly }}
+      when: customName is not defined
+
+    - name: Read the Rest API Body to get the correct variable types 
+      ansible.builtin.include_vars:
+        file: '../Outputs/variables.yaml'
 
     - name: DSCC API Call GET storage systems
       ansible.builtin.include_tasks:

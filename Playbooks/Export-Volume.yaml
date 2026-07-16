@@ -1,4 +1,6 @@
 ---
+#- import_playbook: Get-Volumes.yaml 
+#- import_playbook: Get-HostGroups.yaml
 - name: Export volume playbook
 # Export Volume playbook
 # v1.0 9/27/2024 Thomas Beha
@@ -54,13 +56,13 @@
       ansible.builtin.set_fact:
         body:
           hostGroupIds: "{{ hostgroup }}"
-          autoLun: "true"
+          autoLun: true
       when: LUN is not defined
 
     - name: Check LUN
       ansible.builtin.set_fact:
         body:
-          autoLun: "false"
+          autoLun: false
           LUN: "[{ LUN: {{ LUN }}, hostGroupId: {{ hostgroup }} }]"
       when: LUN is defined and LUN != ""
 
