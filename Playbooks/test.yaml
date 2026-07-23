@@ -19,19 +19,16 @@
   hosts: localhost
   vars:
     method: "GET"
-    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
+    #request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
+    request_uri: "/api/v1/volumes"
 
   tasks:
 
-    - name: DSCC API Call - Get Volume
-      ansible.builtin.include_tasks:
-        file: DSCC-API-Call.yaml
-
-    - name: Retry the command if status 401
-      ansible.builtin.include_tasks:
-        file: DSCC-API-401.yaml
-      when: status == '401'
+    - name: Check for Filter
+      ansible.builtin.set_fact:
+        request_uri: "{{ request_uri }}?{{  Filter }}"
+      when: Filter is defined and Filter != ""
 
     - name: Display Result
       ansible.builtin.debug:
-        msg: "{{ result }}" 
+        msg: "{{ request_uri }}" 

@@ -3,9 +3,7 @@
   # v1 09/27/2029 Thomas Beha
   # Retrieves the list of the hosts defined in the DSCC and stores it in hosts.json
   # Parameter: 
-  #    offset:  Offset for result listing (optional) 
-  #    limit:   Limit for result listing (optional)
-  #    filter:  Search filter (optional)
+  #     Hostname:  Host Name 
   # Output: hosts list stored in hosts.json
   #   {
   #     <hostname>: {
@@ -19,14 +17,14 @@
     offset: 0
     limit: 100
     method: "GET"
-    request_uri: "/api/v1/host-initiators?limit={{ limit }}&offset={{ offset }}"
+    request_uri: "/api/v1/host-initiators?limit={{ limit }}&offset={{ offset }}&filter=name%20eq%20{{ Hostname }}"
   tasks:
 
     - name: Check for Offset
       ansible.builtin.set_fact:
         offset: "{{  Offset }}"
       when: Offset is defined and Offset != ""
-      
+
     - name: Check for Limit
       ansible.builtin.set_fact:
         limit: "{{ Limit }}"
@@ -41,26 +39,8 @@
         file: DSCC-API-401.yaml
       when: status == '401'
 
-    - name: Initialize hosts dictionary
-      ansible.builtin.set_fact:
-        dscc_hosts: "{{ dscc_hosts | default({}) }}"
+    - name: Display Result
+      ansible.builtin.debug:
+        msg: "{{ response }}"
 
-    - name: Loop through Result and populate the hosts dictionary
-      ansible.builtin.set_fact:
-        dscc_hosts: "{{ dscc_hosts | combine({item.name: item.id}) }}"
-      with_items: "{{ response.json['items'] }}"
-
-    - name: Store the Hosts List
-      ansible.builtin.copy:
-        content: "{{ dscc_hosts | to_nice_json }}"
-        dest: '../Outputs/hosts.json'
-        mode: '0644'
-
-    - name: Show Results
-      vars:
-        elements: dscs_hosts
-        elementname: "Hosts"
-        result: "{{ response }}"
-      ansible.builtin.include_tasks:
-        file: DisplayResults.yaml
         
