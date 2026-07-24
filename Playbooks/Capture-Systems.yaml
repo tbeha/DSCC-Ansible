@@ -28,7 +28,7 @@
       request_uri: "/api/v1/storage-systems" 
     ansible.builtin.include_tasks:
       file: DSCC-API-401.yaml
-    when: status == '401'
+    when: status == 401
 
   - name: Set Systems
     ansible.builtin.set_fact:
