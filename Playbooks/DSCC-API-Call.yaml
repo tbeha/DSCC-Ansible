@@ -78,9 +78,9 @@
 - name: Set response when status in [200, 201, 202, 401]
   ansible.builtin.set_fact:
     response: "{{ tmpres }}"
-  when: status in ['200', '201', '202','401']
+  when: status in [200, 201, 202, 401]
 
 - name: Undefine Response when status not in [200...]
   ansible.builtin.set_fact:
     response: "{{status}} - {{tmpres}}"
-  when: status not in ['200', '201', '202','401']
+  when: status not in [200, 201, 202, 401]

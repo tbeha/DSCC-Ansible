@@ -24,7 +24,7 @@
 
       ansible.builtin.include_tasks:
         file: DSCC-API-401.yaml
-      when: status == '401'
+      when: status == 401
 
     - name: Initialize Events dictionary
       ansible.builtin.set_fact:

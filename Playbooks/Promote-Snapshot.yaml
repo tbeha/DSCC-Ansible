@@ -63,7 +63,7 @@
     - name: Retry the command if status 401
       ansible.builtin.include_tasks:
         file: DSCC-API-401.yaml
-      when: status == '401'
+      when: status == 401
 
     - name: Show results 
       vars:

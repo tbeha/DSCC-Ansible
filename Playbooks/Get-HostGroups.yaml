@@ -25,7 +25,7 @@
     - name: Retry the command if status 401
       ansible.builtin.include_tasks:
         file: DSCC-API-401.yaml
-      when: status == '401'
+      when: status == 401
 
     - name: Initialize host_groups dictionary if not defined
       ansible.builtin.set_fact:
