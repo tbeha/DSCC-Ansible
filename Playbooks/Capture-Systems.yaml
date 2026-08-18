@@ -33,7 +33,7 @@
   - name: Set Systems
     ansible.builtin.set_fact:
       systems: "{{ response.json['items'] }}"
-    when: status in ['200', '201']
+    when: status in [200, 201]
 
   - name: Initialize Storage system dictionary if not defined
     ansible.builtin.set_fact:

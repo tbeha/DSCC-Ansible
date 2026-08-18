@@ -8,5 +8,10 @@ Playbooks/CaptureSystem.err
 Playbooks/CaptureSystem.log
 .gitignore
 Outputs/systems.json
-.gitignore
 Outputs/volumesets.json
+Outputs/duplicates.json
+Outputs/host_groups.json
+Outputs/hosts.json
+Outputs/initiators.json
+Outputs/tasks.json
+Outputs/volumes.json

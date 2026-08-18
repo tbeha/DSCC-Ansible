@@ -30,9 +30,8 @@
         limit: "{{ Limit }}"
       when: Limit is defined and Limit != "" 
 
-    - name: DSCC API Call GET tasks
-      vars:
-      ansible.builtin.include:
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
     - name: Retry the command if status 401
@@ -43,7 +42,7 @@
     - name: Store the data in a file
       ansible.builtin.copy:
         content: "{{ response.json | to_json }}"
-        dest: "../Output/tasks.json"
+        dest: "../Outputs/tasks.json"
         mode: '0644'
 
     - name: Show results 
