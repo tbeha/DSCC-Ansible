@@ -7,3 +7,6 @@ Outputs/variables.yaml
 Playbooks/CaptureSystem.err
 Playbooks/CaptureSystem.log
 .gitignore
+Outputs/systems.json
+.gitignore
+Outputs/volumesets.json
