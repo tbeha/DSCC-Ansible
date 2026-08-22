@@ -1,12 +1,6 @@
-credentials.yml
-Systems.txt
 token.txt
 .vscode/settings.json
 Notes
-Outputs/variables.yaml
-Playbooks/CaptureSystem.err
-Playbooks/CaptureSystem.log
-.gitignore
 Outputs/systems.json
 Outputs/volumesets.json
 Outputs/duplicates.json
@@ -15,3 +9,5 @@ Outputs/hosts.json
 Outputs/initiators.json
 Outputs/tasks.json
 Outputs/volumes.json
+.gitignore
+Playbooks/vars/data.txt

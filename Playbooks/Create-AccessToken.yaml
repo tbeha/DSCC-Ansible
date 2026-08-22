@@ -1,0 +1,34 @@
+---
+- name: Get New Access Token
+# Playbook get a new access token
+# (c) Thomas Beha, v1.0, 08/22/2026
+# The playbook retrieves a new access token and stores it in vars/token.txt
+#   a new token is required if you want to change the workspace
+# 
+#   The workspace access information should be stored in 3 dictionaries in the ansible-vault secured vars/credentials.yml file:
+#     sso_url:
+#       workspaceID: <token issuer url>
+#       ...
+#     glp_id:
+#       workspaceID: <cliend id>
+#       ...
+#     glp_secret:
+#       workspaceID: <client secret>
+#       ...
+#
+# Parameter:
+#     workspaceID  - workspace selection 
+#
+# Output file: vars/token.txt
+#
+# Run Command: ansible-playbook Create-AccessToken.yml -e "workspace=<workspaceID>"
+#
+  hosts: localhost
+  vars:
+    method: "GET"
+    
+  tasks:
+
+  - name: Create a new access token for a Workspace change
+    ansible.builtin.include_tasks:
+      file: Get-Token.yaml

@@ -16,12 +16,16 @@
 - name: Include encrypted vars
   include_vars: credentials.yml
 
+- name: Set Workspace
+  ansible.builtin.set_fact:
+    wsp: "{{ workspace }}"
+
 - name: Get Access Token
   ansible.builtin.uri:
-    url: "{{ sso_url }}"
+    url: "{{ sso_url[wsp] }}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
-      Authorization: "Basic {{ (glp_id + ':' + glp_secret) | b64encode }}"
+      Authorization: "Basic {{ (glp_id[wsp] + ':' + glp_secret[wsp]) | b64encode }}"
     method: POST
     body: "grant_type=client_credentials"
     validate_certs: false

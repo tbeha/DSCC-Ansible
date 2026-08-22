@@ -17,18 +17,19 @@
   # ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"
 
   hosts: localhost
-  vars:
-    method: "GET"
-    #request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
-    request_uri: "/api/v1/volumes"
+
+  vars_files: credentials.yml
 
   tasks:
-
-    - name: Check for Filter
+    - name: Set Workspace
       ansible.builtin.set_fact:
-        request_uri: "{{ request_uri }}?{{  Filter }}"
-      when: Filter is defined and Filter != ""
+        wsp: "{{ workspace }}"
 
-    - name: Display Result
+    - name: set url...
+      ansible.builtin.set_fact:
+        url: "{{ sso_url[wsp] }}"
+        Authorization: "Basic {{ (glp_id[wsp] + ':' + glp_secret[wsp]) }}"
+
+    - name: Display ID
       ansible.builtin.debug:
-        msg: "{{ request_uri }}" 
+        msg: "{{ Authorization }}  -- {{url}}"      
