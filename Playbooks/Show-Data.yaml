@@ -12,7 +12,7 @@
 
     - name: Read the dictionary from file 
       ansible.builtin.set_fact:
-        data: "{{ lookup('file', '../Outputs/{{filename}}') }}"
+        data: "{{ lookup('file', '../Outputs/{{filename}}') | from_json }}"
 
     - name: Display the data 
       ansible.builtin.debug:

@@ -21,15 +21,15 @@
   vars_files: credentials.yml
 
   tasks:
-    - name: Set Workspace
-      ansible.builtin.set_fact:
-        wsp: "{{ workspace }}"
 
-    - name: set url...
-      ansible.builtin.set_fact:
-        url: "{{ sso_url[wsp] }}"
-        Authorization: "Basic {{ (glp_id[wsp] + ':' + glp_secret[wsp]) }}"
+  - name: Read HostGroups
+    ansible.builtin.set_fact: 
+      host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
 
-    - name: Display ID
-      ansible.builtin.debug:
-        msg: "{{ Authorization }}  -- {{url}}"      
+  - name: Get hostgroup
+    vars:
+      key: "{{ HostGroupName }}"
+    ansible.builtin.debug:
+      msg: "{{ key }}  :: {{ host_groups[key]}}"
+
+    

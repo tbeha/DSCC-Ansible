@@ -33,7 +33,7 @@
 
     - name: Loop through response
       ansible.builtin.set_fact:
-        host_groups: "{{ host_groups | combine({item.name: item.id}) }}"
+        host_groups: "{{ host_groups | combine({item.name: {'id': item.id} }) }}"
       with_items: "{{ response.json['items'] }}"
 
     - name: Display the Host Groups List

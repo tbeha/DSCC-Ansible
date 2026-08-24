@@ -22,9 +22,13 @@ The current releas of the Ansible playbooks supports multiple workspaces. The ne
         workspace1: oW2u340sdarrupqyfa
         workspace2: Abcdefghijklmnopqr
 
-where workspace1 and workspace2 are your workspace ids. A new access token for a specific workspace can be retrieved as followed:
+where workspace1 and workspace2 are your workspace ids. 
+
+This change requires now, to specify the workspace with the following command:
 
 ansible-playbook Get-AccessToken -e "workspace=workspace1"
+
+Please note, that a token has a lifetime of 900s and needs to be refreshed after the expiration. If you want to change from one workspace to another, then it is best to issue a Get-AccessToken.yaml command with the required workspace id - otherwise you would need to wait until the current token expires (the scripts request only a new token after the expiration of the current one). 
 
 Common tasks are stored in the following base playbooks:
 

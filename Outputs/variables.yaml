@@ -1,0 +1,10 @@
+body:
+  name: "VCSA83"
+  comments: "Thomas Beha - Ansible"
+  userCpg: "SSD_r6"
+  count: 1
+  dataReduction: True
+  ransomware: True
+  sizeMib: 256000
+  userAllocWarning: 5
+  snapshotAllocWarning: 5
