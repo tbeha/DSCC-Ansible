@@ -5,10 +5,32 @@ The playbooks just use builtin Ansible routines and do not require any additiona
 
 The DSCC API documentation can be found at: https://console-us1.data.cloud.hpe.com/doc/api/v1/
 
+The current releas of the Ansible playbooks supports multiple workspaces. The necessary workspace specific token request URL, client id and client secret are best stored in a ansible-vault file vars/credentials.yml. You can adjust the include encrypted vars task in the Get-Token.yaml file if needed. The structure of the credentials.yml file is as followed:
+
+    base_url: https://eu1.data.cloud.hpe.com  - enter here your regional base url
+    ansible_become_password: \< your ansible become password \>
+
+    sso_url:
+        workspace1: https://global.api.greenlake.hpe.com/authorization/v2/oauth2/4xkfjhoiuo.../token
+        workspace2: https://global.api.greenlake.hpe.com/authorization/v2/oauth2/4xkfjhoiuo.../token
+
+    glp_id:
+        workspace1: 80094785-98098-080808-7979
+        workspace2: 78972779-79792-797911-1234
+
+    glp_secret:
+        workspace1: oW2u340sdarrupqyfa
+        workspace2: Abcdefghijklmnopqr
+
+where workspace1 and workspace2 are your workspace ids. A new access token for a specific workspace can be retrieved as followed:
+
+ansible-playbook Get-AccessToken -e "workspace=workspace1"
+
 Common tasks are stored in the following base playbooks:
 
 | Basic Playbook    | Required Parameter                   | Optional Parameter       | Description                                                                       | 
 |-------------------|--------------------------------------|--------------------------|-----------------------------------------------------------------------------------|
+|Get-AccessToken | workspace: the workspace tag |   | Retrieves a new access token for the workspace |
 |DSCC-API-Call | requestUri: the request URL          | body: the request body   |issues a REST API call |
 |                   | method: the request method (GET, POST, DELETE, PUT)   |       |           |
 |DSCC-API-401 | requestUri: the request URL          | body: the request body   |Gets a new access token and issues a REST API Call|

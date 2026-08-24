@@ -14,7 +14,7 @@
 # The DSCC-API-Call.yml method is retrieving the access token from token.txt 
 #
 - name: Include encrypted vars
-  include_vars: credentials.yml
+  include_vars: vars/credentials.yml
 
 - name: Set Workspace
   ansible.builtin.set_fact:
