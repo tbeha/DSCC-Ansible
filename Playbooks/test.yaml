@@ -30,6 +30,6 @@
     vars:
       key: "{{ HostGroupName }}"
     ansible.builtin.debug:
-      msg: "{{ key }}  :: {{ host_groups[key]}}"
+      msg: "{{ key }}  :: {{ host_groups[key]['id']}}"
 
     

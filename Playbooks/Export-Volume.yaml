@@ -50,12 +50,12 @@
         key: "{{ HostGroupName }}"
       ansible.builtin.set_fact:
         hostgroup:
-          - "{{ host_groups[key] }}"
+          - "{{ host_groups[key]['id'] }}"
 
     - name: Set body
       ansible.builtin.set_fact:
         body:
-          hostGroupIds: "{{ hostgroup }}"
+          hostGroupIds: "{{ hostgroup}}"
           autoLun: true
       when: LUN is not defined
 
