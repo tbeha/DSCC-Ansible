@@ -1,10 +1,7 @@
 body:
-  name: "VCSA83"
-  comments: "Thomas Beha - Ansible"
-  userCpg: "SSD_r6"
-  count: 1
-  dataReduction: True
-  ransomware: True
-  sizeMib: 256000
-  userAllocWarning: 5
-  snapshotAllocWarning: 5
+  comment: "Test03"
+  namePattern: "PARENT_TIMESTAMP"
+  readOnly: True
+  customName: 'TestSnap001'
+  expireSecs: '120'
+  retainSecs: '60'

@@ -17,19 +17,17 @@
   # ansible-playbook Create-Volume.yaml -e "SystemName='CTC-MP-Block8' VolumeName='AnsibleTestVolume_01' CPG='SSD_r6' Size='20480' Comment='Ansible Test Thomas Beha' Count='1' DataReduction='true'"
 
   hosts: localhost
-
-  vars_files: credentials.yml
+  vars:
+    method: "POST"
+    request_uri: "{{ myvol.resourceUri }}/snapshots"
+    namePattern: "PARENT_TIMESTAMP"
+    comment: "Created by Thomas B. with Ansible"
+    readOnly: true
 
   tasks:
 
-  - name: Read HostGroups
-    ansible.builtin.set_fact: 
-      host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
+    - name: Include encrypted vars
+      include_vars: vars/credentials.yml
 
-  - name: Get hostgroup
-    vars:
-      key: "{{ HostGroupName }}"
-    ansible.builtin.debug:
-      msg: "{{ key }}  :: {{ host_groups[key]['id']}}"
 
     

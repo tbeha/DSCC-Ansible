@@ -9,12 +9,12 @@
   # Optional Parameter:
   #   NamePattern - Name pattern: "PARENT_TIMESTAMP", "PARENT_SEC_SINCE_EPOCH", "CUSTOM"
   #   Comment - string or null 
-  #   CustomName - Snapshot Name or null
+  #   SnapshotName - Snapshot Name or null
   #   ExpireSecs - Expiration time ins seconds
   #   ReadOnly - Boolean
   #   RetainSecs / Retention time in seconds 
   #
-  #   Attention if a CustomName is defined for the Snapshot then the NamePattern entry is obviously ignored. 
+  #   Attention if a CustomName is defined for the Snapshot then the NamePattern entry will be set to "CUSTOM". 
   #   
   # ansible-playbook Create-Snapshot.yaml -e "VolumeName='AnsibleTestVolume_01' ..."
 
@@ -22,31 +22,10 @@
   vars:
     method: "POST"
     request_uri: "{{ myvol.resourceUri }}/snapshots"
-    expiration: 86400
-    retain: 86400
     namePattern: "PARENT_TIMESTAMP"
     comment: "Created by Thomas B. with Ansible"
     readOnly: true
   tasks:
-    - name: Read volume list
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
-
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
-      ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
-
-    - name: Check for Expiration
-      ansible.builtin.set_fact: 
-        expiration: "{{  ExpireSecs }}"
-      when: ExpireSecs is defined and ExpireSecs != ""
-
-    - name: Check for Retentiontime
-      ansible.builtin.set_fact:
-        retain: "{{  RetainSecs }}"
-      when: RetainSecs is defined and RetainSecs != ""
 
     - name: Check for Name Pattern
       ansible.builtin.set_fact:
@@ -69,32 +48,46 @@
           namePattern: "CUSTOM"
       when: SnapshotName is defined and SnapshotName != ""
 
-    - name: Write Request Body with customName for saving the variable in the correct type
+    - name: Write Base Request Body 
       ansible.builtin.copy:
         dest: '../Outputs/variables.yaml'
         mode: '0644'
         content: |
               body:
                 comment: "{{ comment }}"
-                customName: "{{ customName }}"
                 namePattern: "{{ namePattern }}"
-                expireSecs: {{ expiration }}
-                retainSecs: {{ retain }}
                 readOnly: {{ readOnly }}
-      when: customName is defined
 
-    - name: Write Request Body without customName for saving the variable in the correct type
-      ansible.builtin.copy:
-        dest: '../Outputs/variables.yaml'
-        mode: '0644'
-        content: |
-              body:
-                comment: "{{ comment }}"
-                namePattern: "{{ namePattern }}"
-                expireSecs: {{ expiration }}
-                retainSecs: {{ retain }}
-                readOnly: {{ readOnly }}
-      when: customName is not defined
+    - name: Add Snapshot Name to Request Body
+      ansible.builtin.lineinfile:
+        path: '../Outputs/variables.yaml'
+        line: "  customName: '{{ customName }}'"
+        insertafter: EOF
+      when: customName is defined
+    
+    - name: Check for Expiration
+      ansible.builtin.lineinfile: 
+        path: '../Outputs/variables.yaml'
+        line: "  expireSecs: '{{ ExpireSecs }}'"
+        insertafter: EOF
+      when: ExpireSecs is defined and ExpireSecs != ""
+
+    - name: Check for Retentiontime
+      ansible.builtin.lineinfile: 
+        path: '../Outputs/variables.yaml'
+        line: "  retainSecs: '{{ RetainSecs }}'"
+        insertafter: EOF
+      when: RetainSecs is defined and RetainSecs != "" 
+
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
+
+    - name: Get volume id
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
 
     - name: Read the Rest API Body to get the correct variable types 
       ansible.builtin.include_vars:
@@ -109,7 +102,7 @@
         file: DSCC-API-401.yaml
       when: status == 401
 
-    - name: Show results 
+    - name: Display Command Reponse
       vars:
         elementname: "Snapshot"
         result: "{{ response }}"
