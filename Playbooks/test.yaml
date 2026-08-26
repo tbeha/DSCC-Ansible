@@ -18,16 +18,42 @@
 
   hosts: localhost
   vars:
-    method: "POST"
-    request_uri: "{{ myvol.resourceUri }}/snapshots"
-    namePattern: "PARENT_TIMESTAMP"
-    comment: "Created by Thomas B. with Ansible"
-    readOnly: true
-
+    
   tasks:
 
-    - name: Include encrypted vars
-      include_vars: vars/credentials.yml
+    - name: Read volume list
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup( 'file', '../Outputs/volumes.json') | from_json }}"
 
+    - name: Get volume
+      vars:
+        key: "{{ VolumeName }}"
+      ansible.builtin.set_fact:
+        myvol: "{{ volumes[key] }}"
 
-    
+    - name: Set API Call Parameter
+      ansible.builtin.set_fact:
+        method: "GET"
+        request_uri: "{{ myvol.resourceUri }}/snapshots"
+
+    - name: DSCC API Call
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Initialize Snapshot dictionary
+      ansible.builtin.set_fact:
+        snapshots: "{{ snapshots | default({}) }}"
+
+    - name: Loop through Response
+      ansible.builtin.set_fact:
+        snapshots: "{{ snapshots | combine({item.name: item.id}) }}"
+      with_items: "{{ response.json['items'] }}"
+
+    - name: Display result
+      ansible.builtin.debug:
+        msg: "{{snapshots}}  "

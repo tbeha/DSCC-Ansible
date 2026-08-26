@@ -25,6 +25,7 @@
     namePattern: "PARENT_TIMESTAMP"
     comment: "Created by Thomas B. with Ansible"
     readOnly: true
+    body: {}
   tasks:
 
     - name: Check for Name Pattern
@@ -48,35 +49,27 @@
           namePattern: "CUSTOM"
       when: SnapshotName is defined and SnapshotName != ""
 
-    - name: Write Base Request Body 
-      ansible.builtin.copy:
-        dest: '../Outputs/variables.yaml'
-        mode: '0644'
-        content: |
-              body:
-                comment: "{{ comment }}"
-                namePattern: "{{ namePattern }}"
-                readOnly: {{ readOnly }}
-
-    - name: Add Snapshot Name to Request Body
-      ansible.builtin.lineinfile:
-        path: '../Outputs/variables.yaml'
-        line: "  customName: '{{ customName }}'"
-        insertafter: EOF
-      when: customName is defined
+    - name: Populate Body
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({item.key: item.value}) }}"
+      loop:
+        - { key: 'comment', value: "{{ comment }}"}
+        - { key: 'readOnly', value: "{{ readOnly }}"}
+        - { key: 'namePattern', value: "{{ namePattern }}"}
     
+    - name: Add SnapshotName to body
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({'customName': customName})}}"
+      when: customName is defined
+
     - name: Check for Expiration
-      ansible.builtin.lineinfile: 
-        path: '../Outputs/variables.yaml'
-        line: "  expireSecs: '{{ ExpireSecs }}'"
-        insertafter: EOF
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({'expireSec': ExpireSecs})}}"
       when: ExpireSecs is defined and ExpireSecs != ""
 
     - name: Check for Retentiontime
-      ansible.builtin.lineinfile: 
-        path: '../Outputs/variables.yaml'
-        line: "  retainSecs: '{{ RetainSecs }}'"
-        insertafter: EOF
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({'retainSec': RetainSecs})}}"
       when: RetainSecs is defined and RetainSecs != "" 
 
     - name: Read volume list

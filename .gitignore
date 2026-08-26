@@ -12,3 +12,4 @@ Outputs/volumes.json
 .gitignore
 Playbooks/vars/data.txt
 Outputs/variables.yaml
+Outputs/VCSA83.json
