@@ -3,7 +3,7 @@
   # v2 10/22/2029 Thomas Beha
   #
   # Parameter:
-  #   hostgroupName
+  #   HostGroupName - name of the hostgroup 
   # Optional:
   #   hostsToCreate - list of hosts to be added to the group
   #   updatedHosts - Array of strings or null; list of host ids added to the group
@@ -17,24 +17,28 @@
 
   hosts: localhost
   vars:
-    method: "PUT"
-    request_uri: "/api/v1/host-initiator-groups/{{ hostgroupid }}"
-    body:
-      hostupdate: ""
-      hostremove: ""
-      hosttocreate: ""
-      proximity: ""
+    #method: "PUT"
+    #request_uri: "/api/v1/host-initiator-groups/{{ hostgroupid }}"
+    #body:
+    #  hostupdate: ""
+    #  hostremove: ""
+    #  hosttocreate: ""
+    #  proximity: ""
+    method: "GET"
+    request_uri: "/api/v1/host-initiator-groups?filter=name%20eq%20'{{HostGroupName}}'"
   tasks:
+    - name: DSCC API Call - Get HostGroup
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Read host_groups.json
-      ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
+    - name: Retry the command if status 401 - Get Host Group
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
 
-    - name: Get hostgroup id
-      vars:
-        key: "{{ HostGroupName }}"
+    - name: Set HostGroup
       ansible.builtin.set_fact:
-        hostgroupid: "{{ host_groups[key] }}"
+        hostgroup: "{{ result.json['items'][0].id }}"
 
     - name: Check for updated hosts
       ansible.builtin.set_fact:
@@ -56,6 +60,11 @@
         body: "{{ body | combine({ 'hosttocreate':'{{  hostsToCreate }}' }) }}"
       when: hostsToCreate is defined and hostsToCreate != ""
 
+    - name: Set Method and URI
+      ansible.builtin.set_fact:
+        method: "PUT"
+        request_uri: "/api/v1/host-initiator-groups/{{ hostgroupid }}"
+
     - name: DSCC API Call
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
@@ -68,7 +77,7 @@
     - name: Show Results
       vars:
         elements: dscs_hosts
-        elementname: "Unexport Volume"
+        elementname: "Update Hostgroup"
         result: "{{ response }}"
       ansible.builtin.include_tasks:
         file: DisplayResults.yaml

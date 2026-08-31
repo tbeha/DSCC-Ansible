@@ -12,33 +12,47 @@
 #
   hosts: localhost
   vars:
-    method: "POST"
-    request_uri: "{{ myvol['resourceUri'] }}/un-export"
+    #method: "POST"
+    #request_uri: "{{ myvol['resourceUri'] }}/un-export"
+    method: "GET"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
+    # First get Volume Uri
+    - name: DSCC API Call - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Read volume list
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
+    - name: Retry the command if status 401 - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
 
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
+    - name: Set Volume Resoure Uri
       ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
+        vol_uri: "{{ result.json['items'][0].resourceUri }}"
+    
+    # 2. Get HostGroup
+    - name: Set HostGroup request_uri
+      ansible.builtin.set_fact:
+        request_uri: "/api/v1/host-initiator-groups?filter=name%20eq%20'{{HostGroupName}}'"
+    
+    - name: DSCC API Call - Get HostGroup
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Read host_groups.json
-      ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
+    - name: Retry the command if status 401 - Get Host Group
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
 
-    - name: Get hostgroup
-      vars:
-        key: "{{ HostGroupName }}"
+    - name: Set HostGroup
       ansible.builtin.set_fact:
-        hostgroup:
-          - "{{ host_groups[key]['id'] }}"
+        hostgroup: "{{ result.json['items'][0].id }}"
 
-    - name: Set body
+    - name: Set body, method and request Uri
       ansible.builtin.set_fact:
+        method: "POST"
+        request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
         body:
           hostGroupIds: "{{ hostgroup }}"
 
