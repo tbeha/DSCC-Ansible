@@ -55,11 +55,12 @@
     vars:
       request_uri: "/api/v1/host-initiator-groups"
     ansible.builtin.include_tasks:
-      file: DSCC-API-Call.yaml    
+      file: DSCC-API-Call.yaml
+          
   - name: Store the HostGroups
     ansible.builtin.copy:
       content: "{{ response.json | to_nice_json }}"
-      dest: "../Outputs/hostGroups.json"
+      dest: "{{ lookup('env','HOME') }}/.ansible/hostGroups.json"
       mode: '0600'
     when: response.json is defined
   
@@ -69,6 +70,6 @@
   - name: Store the Hosts
     ansible.builtin.copy:
       content: "{{ response.json | to_nice_json }}"
-      dest: "../Outputs/hosts.json"
+      dest: "{{ lookup('env','HOME') }}/.ansible/hosts.json"
       mode: '0600'
     when: response.json is defined  

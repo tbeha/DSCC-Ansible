@@ -13,7 +13,7 @@
 - name: Write response
   ansible.builtin.debug: 
     var: result
-  when: result.json['total'] is not defined or result.json['pageLimit'] is not defined or elements is not defined 
+  when: result is defined and elements is not defined 
 
 - name: Display short result
   ansible.builtin.debug:

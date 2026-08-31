@@ -1,6 +1,6 @@
 ---
 - name: Get Duplicates
-  # v1 09/27/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Parameter:
   #
@@ -23,7 +23,7 @@
     - name: Store the  duplicates list
       ansible.builtin.copy:
         content: "{{ response.json['items']| to_json }}"
-        dest: '../Outputs/duplicates.json'
+        dest: "{{ lookup('env','HOME') }}/.ansible/duplicates.json"
         mode: '0644'
 
     - name: Display result

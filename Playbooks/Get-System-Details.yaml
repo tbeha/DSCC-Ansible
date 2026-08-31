@@ -1,12 +1,9 @@
 ---
 - name: Get Details of a Storage System
   # Get the volumes of a storage system identified by the system name
-  # v2.0 10/13/2024 Thomas Beha
+  # v3.0 08/28/2026 Thomas Beha
   # Parameter:
   #   SystemName  - name of the Storage system
-  #
-  # Accessed data file:
-  #   systems.json
   #
   # Run command:
   #   ansible-playbook Get-System-Details.yaml -e "SystemName='<systemname>'"
@@ -14,18 +11,21 @@
   hosts: localhost
   vars:
     method: "GET"
-    request_uri: "{{ storage['resourceUri'] }}"
+    request_uri: "/api/v1/storage-systems?filter=name%20eq%20'{{SystemName}}'"
   tasks:
 
-    - name: Get storage systems from systems.json
-      ansible.builtin.set_fact:
-        systems: "{{ lookup('file', '../Outputs/systems.json') | from_json}}"
+    - name: DSCC API Call - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Lookup system
-      vars:
-        key: "{{ SystemName }}"
+    - name: Retry the command if status 401 - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set new Request Uri - <storage systems resourceUri>
       ansible.builtin.set_fact:
-        storage: "{{ systems[key] }}"
+        request_uri: "{{ result.json['items'][0].resourceUri }}"  
 
     - name: DSCC API Call
       ansible.builtin.include_tasks:
@@ -43,7 +43,7 @@
     - name: Store the System Details
       ansible.builtin.copy:
         content: "{{ system | to_json }}"
-        dest: "../Outputs/{{ SystemName }}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ SystemName }}.json"
         mode: '0644'
 
     - name: Initialize Link Dictionary
@@ -58,7 +58,7 @@
     - name: Save Link dictionary
       ansible.builtin.copy:
         content: "{{links | to_json}}"
-        dest: "../Outputs/{{SystemName}}.Links.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{SystemName}}.Links.json"
         mode: '0644'
     
     - name: Loop Links

@@ -52,7 +52,7 @@
     - name: Store the volumesets List
       ansible.builtin.copy:
         content: "{{ response.json['items'] | to_json }}"
-        dest: "../Outputs/{{VolumeSetName}}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{VolumeSetName}}.json"
         mode: '0644'
 
     - name: Show results 

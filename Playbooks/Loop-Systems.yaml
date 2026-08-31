@@ -11,7 +11,7 @@
 - name: Store the System Details
   ansible.builtin.copy:
     content: "{{ response.json | to_nice_json }}"
-    dest: "../Outputs/{{ SystemName }}.json"
+    dest: "{{ lookup('env','HOME') }}/.ansible/{{ SystemName }}.json"
     mode: '0600'
 
 - name: Initialize Associated Links Dictionary
@@ -38,6 +38,6 @@
 - name: Save Result
   ansible.builtin.copy:
     content: "{{response.json | to_nice_json}}"
-    dest: "../Outputs/{{SystemName}}.volumes.json"
+    dest: "{{ lookup('env','HOME') }}/.ansible/{{SystemName}}.volumes.json"
     mode: '0600'  
   when: response.json is defined

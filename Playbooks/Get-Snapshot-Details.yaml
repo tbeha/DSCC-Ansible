@@ -12,28 +12,32 @@
   hosts: localhost
   vars:
     method: "GET"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
 
-    - name: Read volume list
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
+    - name: DSCC API Call - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
+    - name: Retry the command if status 401 - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set Volume
       ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
+        resourceUri: "{{ result.json['items'][0].resourceUri }}"
 
     - name: Check Snapshot Name and set URL
       vars: 
         key: "{{ SnapshotName }}"
       ansible.builtin.set_fact:
-        request_uri: "{{ myvol.resourceUri }}/snapshots/{{ snapshots[key].id }}"
+        request_uri: "{{ resourceUri }}/snapshots/{{ snapshots[key].id }}"
       when: SnapshotName is defined and SnapshotName != ""
 
     - name: Check Snapshot ID and set URL
       ansible.builtin.set_fact:
-        request_uri: "{{ myvol.resourceUri }}/snapshots/{{ SnapshotId }}"
+        request_uri: "{{ resourceUri }}/snapshots/{{ SnapshotId }}"
       when: SnapshotId is defined and SnapshotId != ""      
 
     - name: DSCC API Call
@@ -48,7 +52,7 @@
     - name: Store the result
       ansible.builtin.copy:
         content: "{{ response | to_json }}"
-        dest: "../Outputs/{{ response.json.name }}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ response.json.name }}.json"
         mode: '0644'    
 
     - name: Show result.status

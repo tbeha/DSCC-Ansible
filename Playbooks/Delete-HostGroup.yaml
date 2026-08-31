@@ -1,6 +1,6 @@
 ---
 - name: Create HostGroup
-  # v1 10/10/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Required Parameter:
   #   hostgroupName
@@ -21,9 +21,13 @@
         force: "{{ Force }}"
       when: Force is defined and Force != ""
 
-    - name: Read host_groups.json
+    - name: Get HostGroup List
       ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
+        hostgrouplist: "{{ lookup('env','HOME') }}/.ansible/host_groups.json"
+
+    - name: Read HostGroups List
+      ansible.builtin.set_fact:
+        host_groups: "{{ lookup('file', hostgrouplist ) | from_json }}"
 
     - name: Get hostgroup id
       vars:

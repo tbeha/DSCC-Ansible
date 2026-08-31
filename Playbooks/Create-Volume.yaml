@@ -1,6 +1,6 @@
 ---
 - name: Create Volumes
-  # v2 07/15/2026 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Required Parameter:
   #   SystemName  name of the storage system
@@ -31,9 +31,13 @@
     snapshotAllocWarning: 5
   tasks:
 
-    - name: Retrieve storage systems list
+    - name: Get System List
       ansible.builtin.set_fact:
-        systems: "{{ lookup( 'file', '../Outputs/systems.json') | from_json }}"
+        systemlist: "{{ lookup('env','HOME') }}/.ansible/systems.json"
+
+    - name: Read System List
+      ansible.builtin.set_fact:
+        systems: "{{ lookup('file', systemlist ) | from_json }}"
 
     - name: Lookup system
       vars:
@@ -71,25 +75,19 @@
         userAllocWarning: "{{ SnapShotAllocWarning }}"
       when: UserAllocWarning is defined and UserAllocWarning != ""
 
-    - name: Write Request Body
-      ansible.builtin.copy:
-        dest: '../Outputs/variables.yaml'
-        mode: '0644'
-        content: |
-              body:
-                name: "{{ VolumeName }}"
-                comments: "{{ comment }}"
-                userCpg: "{{ userCpg }}"
-                count: {{count}}
-                dataReduction: {{ dataReduction }}
-                ransomware: {{ ransomWare }}
-                sizeMib: {{ size }}
-                userAllocWarning: {{ userAllocWarning }}
-                snapshotAllocWarning: {{ snapshotAllocWarning }}
-
-    - name: Read the Rest API Body
-      ansible.builtin.include_vars:
-        file: '../Outputs/variables.yaml'
+    - name: Set Request Body
+      ansible.builtin.set_fact:
+        body: "{{ body | combine({item.key: item.value}) }}"
+      loop:
+        - { key: 'name', value: "{{ VolumeName }}"}
+        - { key: 'comment', value: "{{ comment }}"}
+        - { key: 'userCpg', value: "{{ userCpg }}"}
+        - { key: 'count', value: "{{ count }}"} 
+        - { key: 'dataReduction', value: "{{ dataReduction }}"}
+        - { key: 'ransomware', value: "{{ ransomWare }}"}
+        - { key: 'sizeMib', value: "{{ size }}"}
+        - { key: 'userAllocWarning', value: "{{ userAllocWarning }}"}
+        - { key: 'snapshotAllocWarning', value: "{{ snapshotAllocWarning }}"}
 
     - name: DSCC API Call Create Volume
       ansible.builtin.include_tasks:

@@ -1,6 +1,6 @@
 ---
 - name: Create Initiator
-  # v1 09/30/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Required Parameter:
   #   address
@@ -24,12 +24,12 @@
 
     - name: Initiator Name
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'name':'{{  Name }}' }) }}"
+        body: "{{ body | combine({ 'name': Name  }) }}"
       when: Name is defined and Name != ""
 
     - name: IP Address
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'ipAddress':'{{ IpAddress }}' }) }}"
+        body: "{{ body | combine({ 'ipAddress': IpAddress }) }}"
       when: IpAddress is defined and IpAddress != ""
 
     - name: DSCC API Call GET storage systems

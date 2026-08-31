@@ -14,7 +14,7 @@
 # The DSCC-API-Call.yml method is retrieving the access token from token.txt 
 #
 - name: Include encrypted vars
-  include_vars: vars/credentials.yml
+  include_vars: "{{ lookup('env','HOME') }}/.ansible/credentials.yml"
 
 - name: Set Workspace
   ansible.builtin.set_fact:
@@ -38,7 +38,7 @@
 - name: Store Token
   ansible.builtin.copy:
     content: "{{ token }}"
-    dest: 'vars/token.txt'
+    dest: "{{ lookup('env','HOME') }}/.ansible/token.txt"
     mode: "0600"
 
 - name: Debug

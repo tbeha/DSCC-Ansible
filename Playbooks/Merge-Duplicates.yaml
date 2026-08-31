@@ -12,10 +12,14 @@
     request_uri: "/api/v1/host-initiator-groups/bulkmerge"
   tasks:
 
-    - name: Get Duplicates List
+    - name: Get Duplicate List
+      ansible.builtin.set_fact:
+        duplicatelist: "{{ lookup('env','HOME') }}/.ansible/duplicates.json"
+
+    - name: Read volume list
       ansible.builtin.set_fact:
         body: 
-          items: "{{ lookup('file', '../Outputs/duplicates.json') | from_json}}"
+          items: "{{ lookup( 'file', duplicatelist ) | from_json }}"    
 
     - name: DSCC API Call
       ansible.builtin.include_tasks:

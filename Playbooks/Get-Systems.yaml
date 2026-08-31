@@ -52,7 +52,7 @@
     - name: Store the Systems List
       ansible.builtin.copy:
         content: "{{ storage_systems| to_json }}"
-        dest: '../Outputs/systems.json'
+        dest: "{{ lookup('env','HOME') }}/.ansible/systems.json"
         mode: '0644'
 
     - name: Show result.status

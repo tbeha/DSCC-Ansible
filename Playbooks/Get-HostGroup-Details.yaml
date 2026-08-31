@@ -1,6 +1,7 @@
 ---
 - name: Get HostGroup Details
 # Playbook Get Details of HostGroup {{HostGroupName}}
+# v2 08/28/2026 Thomas Beha
 # Parameter:
 #   HostGroupName - name of the hostgroup
 # Output: stored in file hg-<HostGroupName>.json
@@ -11,17 +12,8 @@
   hosts: localhost
   vars:
     method: "GET"
+    request_uri: "/api/v1/host-initiator-groups?filter=name%20eq%20'{{HostGroupName}}'"
   tasks:
-
-    - name: Read host_groups.json
-      ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
-
-    - name: Get hostgroup id and set the uri
-      vars:
-        key: "{{ HostGroupName }}"
-      ansible.builtin.set_fact:
-        request_uri: "/api/v1/host-initiator-groups/{{ host_groups[key] }}"
 
     - name: Get the details of a HostGroup
       ansible.builtin.include_tasks:
@@ -35,7 +27,7 @@
     - name: Store the data in a file
       ansible.builtin.copy:
         content: "{{ response.json | to_json }}"
-        dest: "../Outputs/hg-{{ HostGroupName }}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/hg-{{ HostGroupName }}.json"
         mode: '0644'
 
     - name: Show result.status

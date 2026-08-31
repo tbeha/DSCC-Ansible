@@ -1,6 +1,6 @@
 ---
 - name: Create HostGroup
-# v1 09/27/2029 Thomas Beha
+# v2 08/28/2026  Thomas Beha
 #
 # Required Parameter:
 #   Name      name of the hostgroup
@@ -22,17 +22,17 @@
 
     - name: Comment
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'comment':'{{ comment }}' }) }}"
+        body: "{{ body | combine({ 'comment': comment }) }}"
       when: comment is defined and comment != ""
 
     - name: HostIds
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'hostIds':'{{ hostIds }}'}) }}"
+        body: "{{ body | combine({ 'hostIds': hostIds }) }}"
       when: hostIds is defined and hostIds !=""
 
     - name: HostsToCreate
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'hostsToCreate':'{{ hostsToCreate }}'}) }}"
+        body: "{{ body | combine({ 'hostsToCreate': hostsToCreate }) }}"
       when: hostsToCreate is defined and hostsToCreate !=""
 
     - name: DSCC API Call

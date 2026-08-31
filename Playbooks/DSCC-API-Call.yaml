@@ -20,12 +20,16 @@
 #   503:  Appliance in maintenance mode
 #   default: unexpected error
 #
+- name: Set Home
+  ansible.builtin.set_fact:
+    home: "{{ lookup('env','HOME') }}"
+
 - name: Include encrypted vars
-  include_vars: vars/credentials.yml
+  include_vars: "{{ home }}/.ansible/credentials.yml"
 
 - name: Get Access Token
   ansible.builtin.set_fact:
-    token: "{{ lookup('file', 'vars/token.txt') }}"
+    token: "{{ lookup('file', '{{ home  }}/.ansible/token.txt') }}"
 
 - name: Check the Methood 
   ansible.builtin.fail:

@@ -3,7 +3,7 @@
 
 - name: Volumedeletion 
   # Delete Volume playbook
-  # v1.0 10/10/2024 Thomas Beha
+  # v2.0 08/28/2026 Thomas Beha
   #
   # Parameters:
   #   VolumeName - name of volume that should be deleted
@@ -15,6 +15,7 @@
   #   ansible-playbook DeleteVolume.yaml -e "VolumeName='<volumeName>'"
   #
   hosts: localhost
+  
   vars:
     unexport: "true"
     cascade: "true"
@@ -31,9 +32,13 @@
         cascade: "{{ cascade }}"
       when: Cascade is defined and Cascade != ""
 
-    - name: Read Volume List
+    - name: Get Volume List
       ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json' ) | from_json }}"
+        volumelist: "{{ lookup('env','HOME') }}/.ansible/volumes.json"
+
+    - name: Read System List
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup('file', volumelist ) | from_json }}"
 
     - name: Get Volume
       vars:

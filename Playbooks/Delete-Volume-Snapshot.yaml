@@ -1,6 +1,6 @@
 ---
 - name: Delete Volume Snapshot
-  # v1 10/07/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Parameter:
   #   VolumeName
@@ -14,9 +14,13 @@
     
   tasks:
 
-    - name: Read volume list
+    - name: Get Volume List
       ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file', '../Outputs/volumes.json') | from_json }}"
+        volumelist: "{{ lookup('env','HOME') }}/.ansible/volumes.json"
+
+    - name: Read System List
+      ansible.builtin.set_fact:
+        volumes: "{{ lookup('file', volumelist ) | from_json }}"
 
     - name: Get volume
       vars:

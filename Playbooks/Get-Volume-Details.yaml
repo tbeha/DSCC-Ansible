@@ -33,9 +33,8 @@
     - name: Store the data in a file
       ansible.builtin.copy:
         content: "{{ response.json | to_json }}"
-        dest: "../Outputs/{{ VolumeName }}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ VolumeName }}.json"
         mode: '0644'
-
 
     - name: Show results 
       vars:

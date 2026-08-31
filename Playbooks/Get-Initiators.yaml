@@ -1,6 +1,6 @@
 ---
 - name: Get Initiators
-  # v1 09/26/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   # Retrieves the list of initiators
   # Parameters
   #   limit
@@ -47,7 +47,7 @@
     - name: Store the Initiators List
       ansible.builtin.copy:
         content: "{{ initiators | to_nice_json }}"
-        dest: '../Outputs/initiators.json'
+        dest: "{{ lookup('env','HOME') }}/.ansible/initiators.json"
         mode: '0644'
 
     - name: Show result.status

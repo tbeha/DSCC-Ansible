@@ -1,12 +1,9 @@
 ---
 - name: Get Volumes of a Storage System
   # Get the volumes of a storage system identified by the system name
-  # v2.0 10/13/2024 Thomas Beha
+  # v3.0 08/28/2026 Thomas Beha
   # Parameter:
   #   SystemName  - name of the Storage system
-  #
-  # Accessed data file:
-  #   systems.json
   #
   # Run command:
   #   ansible-playbook Get-StorageSystem-Volumes.yaml -e "SystemName='<systemname>'"
@@ -15,23 +12,27 @@
   vars:
     limit: 250
     method: "GET"
-    request_uri: "{{ storage['resourceUri'] }}/volumes?limit={{ limit}}&offset=0"
+    #request_uri: "{{ storage['resourceUri'] }}/volumes?limit={{ limit}}&offset=0"
+    request_uri: "/api/v1/storage-systems?filter=name%20eq%20'{{SystemName}}'"
   tasks:
-
-    - name: Get storage systems from systems.json
-      ansible.builtin.set_fact:
-        systems: "{{ lookup('file', '../Outputs/systems.json') | from_json}}"
-
-    - name: Lookup system
-      vars:
-        key: "{{ SystemName }}"
-      ansible.builtin.set_fact:
-        storage: "{{ systems[key] }}"
 
     - name: Check for limit
       ansible.builtin.set_fact:
         limit: "{{ Limit }}"
       when: Limit is defined and Limit != ""
+
+    - name: DSCC API Call - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set new Request Uri - <storage systems resourceUri>/volumes?limit={{ limit}}&offset=0
+      ansible.builtin.set_fact:
+        request_uri: "{{ result.json['items'][0].resourceUri }}/volumes?limit={{ limit}}&offset=0" 
 
     - name: DSCC API Call
       ansible.builtin.include_tasks:
@@ -54,7 +55,7 @@
     - name: Store the volumes List
       ansible.builtin.copy:
         content: "{{ volumes | to_json }}"
-        dest: "../Outputs/{{ SystemName }}.volumes.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ SystemName }}.volumes.json"
         mode: '0644'
 
     - name: Show Results

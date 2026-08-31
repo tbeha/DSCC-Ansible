@@ -1,6 +1,6 @@
 ---
 - name: Get Hosts
-  # v1 09/27/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   # Retrieves the list of the hosts defined in the DSCC and stores it in hosts.json
   # Parameter: 
   #    offset:  Offset for result listing (optional) 
@@ -53,7 +53,7 @@
     - name: Store the Hosts List
       ansible.builtin.copy:
         content: "{{ dscc_hosts | to_nice_json }}"
-        dest: '../Outputs/hosts.json'
+        dest: "/{{ lookup('env','HOME') }}/.ansible/hosts.json"
         mode: '0644'
 
     - name: Show Results

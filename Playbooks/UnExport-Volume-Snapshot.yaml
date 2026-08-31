@@ -1,69 +1,111 @@
 ---
-- name: UneExport-Volume-Snapshot
-# Required Parameter
-#   VolumeName
-#   SnapshotName
-#   HostGroupName
-# ansible-playbook Export-Volume-Snapshot.yaml -e "VolumeName=' '..."
+- name: Volume-Snapshot-UnExport
+  # v2 08/31/2026 Thomas Beha
+  #
+  # Required Parameter:
+  #   VolumeName - name of the snapshot base volume
+  #   HostGroupName - name of the hostgroup the snapshot should be exported to
+  #   SnapshotName  - name of the snapshot that should be exported
+  # Optional Parameter:
+  #
+  # ansible-playbook UnExport-Volume-Snapshot.yaml -e "workspace=<workspaceid> VolumeName=' ' HostGroupName=' ' SnapshotName=' '"
   hosts: localhost
-
-- name: Get Volume Snapshot
-  ansible.builtin.import_playbook: Get-Volume-Snapshots.yaml
 
 - name: UnExport Snapshots
   hosts: localhost
   vars:
-    method: "POST"
-    request_uri: "{{ systemuri}}/snapshots/{{ snapshot.id }}/un-export"
+    method: "GET"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
-    - name: Read host_groups.json
-      ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
-
-    - name: Get hostgroup
-      vars:
-        key: "{{ HostGroupName }}"
-      ansible.builtin.set_fact:
-        hostgroup:
-          - "{{ host_groups[key] }}"
-
-    - name: Check Snapshot Name and set URL
-      vars:
-        key: "{{ SnapshotName }}"
-      ansible.builtin.set_fact:
-        snapshot: "{{ snapshots[key] }}"
-      when: SnapshotName is defined and SnapshotName != ""
-
-    - name: Read systems.json
-      ansible.builtin.set_fact:
-        systems: "{{ lookup('file', 'systems.json') | from_json }}"
-
-    - name: Search the systems list
-      vars:
-        key: "{{ item }}"
-      ansible.builtin.set_fact:
-        systemuri: "{{ systems[key].resourceUri }}"
-      with_items: "{{ systems }}"
-      when: systems[key].id == snapshot.systemId
-
-    - name: Build Body
-      ansible.builtin.set_fact:
-        body:
-          hostGroupIds: "{{ hostgroup }}"
-
-    - name: DSCC API Call GET storage systems
+     # First get Volume Uri
+    - name: DSCC API Call - Get Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
-    - name: Retry the command if status 401
+    - name: Retry the command if status 401 - Get Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-401.yaml
       when: status == 401
 
-    - name: Show Results
+    - name: Set Volume Resoure Uri
+      ansible.builtin.set_fact:
+        vol_uri: "{{ result.json['items'][0].resourceUri }}"
+    
+    # 2. Get HostGroup
+    - name: Set HostGroup request_uri
+      ansible.builtin.set_fact:
+        request_uri: "/api/v1/host-initiator-groups?filter=name%20eq%20'{{HostGroupName}}'"
+    
+    - name: DSCC API Call - Get HostGroup
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - Get Host Group
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set HostGroup
+      ansible.builtin.set_fact:
+        hostgroup: "{{ result.json['items'][0].id }}"
+
+    # 3. Get snapshot Uri & Export the snapshot
+    - name: Set resourceURI      
+      ansible.builtin.set_fact:
+        request_uri: "{{ vol_uri }}/snapshots?filter=name%20eq%20'{{SnapshotName}}'"
+
+    - name: DSCC API Call - Get Snapshot
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - Get Snapshot
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Get System Uri
+      ansible.builtin.set_fact:
+        sys_uri: "{{ vol_uri | regex_replace('^(.*?)/volumes/.*', '\\1') }}"
+
+    - name: Debug - voluri
+      ansible.builtin.debug:
+        msg: "{{ vol_uri }}"
+
+    - name: Debug - sys_uri
+      ansible.builtin.debug:
+        msg: "{{ sys_uri }}"
+
+    - name: Set Snapshot Id
+      ansible.builtin.set_fact:
+        request_uri: "{{ sys_uri }}/snapshots/{{ result.json['items'][0].id }}/export"
+
+    - name: Debug
+      ansible.builtin.debug:
+        msg: "{{ request_uri  }}"
+
+    - name: Set method
+      ansible.builtin.set_fact:
+        method: POST  
+
+    - name: Set body
+      ansible.builtin.set_fact:
+        body:
+          hostGroupIds: ["{{ hostgroup }}"]
+
+    - name: DSCC API Call - unexport snapshot
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - unexport Snapshot
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Show results 
       vars:
-        elements: dscs_hosts
-        elementname: "Unexport Volume Snapshot"
+        elementname: "UnExport Snapshot"
         result: "{{ response }}"
       ansible.builtin.include_tasks:
-        file: DisplayResults.yaml
+        file: DisplayResults.yaml  
+
+ 

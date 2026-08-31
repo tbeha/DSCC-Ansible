@@ -1,6 +1,6 @@
 - name: Get Data 
 # Playbook get the list of storage systems registered in the DSCC
-# (c) Thomas Beha, v2.0, 10/13/2024
+# (c) Thomas Beha, v3.0, 08/28/2026 
 # The playbook retrieves all storage systems of an DSCC and stores a dictionary of the storage systems in systems.json
 # Storage systems dictionary:
 #   <system name>: {
@@ -37,5 +37,5 @@
     - name: Store the Resuls List
       ansible.builtin.copy:
         content: "{{ response.json| to_json }}"
-        dest: "../Outputs/{{ SystemName }}.{{dataname}}.json"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ SystemName }}.{{dataname}}.json"
         mode: '0644'

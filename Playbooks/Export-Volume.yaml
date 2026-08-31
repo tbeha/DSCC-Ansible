@@ -26,31 +26,40 @@
 #   ansible-playbook Export-Volume.yaml -e "VolumeName='<volumeName>' HostGroupName='<hostgroupName>"
 #
   hosts: localhost
-  vars:
-    method: "POST"
-    request_uri: "{{ myvol['resourceUri'] }}/export"
+  vars:  
+    method: "GET"
+    request_uri: "/api/v1/volumes?filter=name%20eq%20'{{VolumeName}}'"
   tasks:
 
-    - name: Read Volume List
-      ansible.builtin.set_fact:
-        volumes: "{{ lookup( 'file','../Outputs/volumes.json') | from_json }}"
+    - name: DSCC API Call - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
 
-    - name: Get volume
-      vars:
-        key: "{{ VolumeName }}"
-      ansible.builtin.set_fact:
-        myvol: "{{ volumes[key] }}"
+    - name: Retry the command if status 401 - Get Volume
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
 
-    - name: Read host_groups.json
+    - name: Set Volume
       ansible.builtin.set_fact:
-        host_groups: "{{ lookup('file', '../Outputs/host_groups.json') | from_json }}"
+        resourceUri: "{{ result.json['items'][0].resourceUri }}"
 
-    - name: Get hostgroup
-      vars:
-        key: "{{ HostGroupName }}"
+    - name: Set HostGroup request_uri
       ansible.builtin.set_fact:
-        hostgroup:
-          - "{{ host_groups[key]['id'] }}"
+        request_uri: "/api/v1/host-initiator-groups?filter=name%20eq%20'{{HostGroupName}}'"
+    
+    - name: DSCC API Call - Get HostGroup
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - Get Host Group
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set HostGroup
+      ansible.builtin.set_fact:
+        hostgroup: "{{ result.json['items'][0].id }}"
 
     - name: Set body
       ansible.builtin.set_fact:
@@ -66,11 +75,19 @@
           LUN: "[{ LUN: {{ LUN }}, hostGroupId: {{ hostgroup }} }]"
       when: LUN is defined and LUN != ""
 
-    - name: DSCC API Call 
+    - name: Set Request Uri
+      ansible.builtin.set_fact:
+        request_uri: "{{ resourceUri }}/export"  
+
+    - name: Set Method
+      ansible.builtin.set_fact:
+        method: POST
+
+    - name: DSCC API Call - Export Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-Call.yaml
 
-    - name: Retry the command if status 401
+    - name: Retry the command if status 401 - Export Volume
       ansible.builtin.include_tasks:
         file: DSCC-API-401.yaml
       when: status == 401

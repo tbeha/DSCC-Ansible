@@ -1,6 +1,6 @@
 ---
 - name: Create Host
-  # v1 09/27/2029 Thomas Beha
+  # v2 08/28/2026 Thomas Beha
   #
   # Required Parameter:
   #   name   name of the host
@@ -32,57 +32,57 @@
 
     - name: IP Address
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'ipAddress':'{{ ipAddress }}' }) }}"
+        body: "{{ body | combine({ 'ipAddress': ipAddress }) }}"
       when: ipAddress is defined and ipAddress != ""
 
     - name: Comment
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'comment':'{{ comment }}' }) }}"
+        body: "{{ body | combine({ 'comment': comment }) }}"
       when: comment is defined and comment != ""
 
     - name: Contact
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'contact':'{{ contact }}' }) }}"
+        body: "{{ body | combine({ 'contact': contact }) }}"
       when: contact is defined and contact != ""
 
     - name: FQDN
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'fqdn':'{{ fqdn }}' }) }}"
+        body: "{{ body | combine({ 'fqdn': fqdn }) }}"
       when: fqdn is defined and fqdn != ""
 
     - name: HostGroup IDs
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'hostGroupIds':'{{ hostGroupIds }}' }) }}"
+        body: "{{ body | combine({ 'hostGroupIds': hostGroupIds }) }}"
       when: hostGroupIds is defined and hostGroupIds != ""
 
     - name: Initiator IDs
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'initiatorIds':'{{ initiatorIds }}' }) }}"
+        body: "{{ body | combine({ 'initiatorIds': initiatorIds }) }}"
       when: initiatorIds is defined and initiatorIds != ""
 
     - name: Initiators to Create
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'initiatorsToCreate':'{{ initiatorsToCreate }}' }) }}"
+        body: "{{ body | combine({ 'initiatorsToCreate': initiatorsToCreate }) }}"
       when: initiatorsToCreate is defined and initiatorsToCreate != ""
 
     - name: IP Address
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'ipAddress':'{{ ipAddress }}' }) }}"
+        body: "{{ body | combine({ 'ipAddress': ipAddress }) }}"
       when: ipAddress is defined and ipAddress != ""
 
     - name: Location
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'location':'{{ location}}' }) }}"
+        body: "{{ body | combine({ 'location': location }) }}"
       when: location is defined and location != ""
 
     - name: Persona
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'persona':'{{ persona }}' }) }}"
+        body: "{{ body | combine({ 'persona': persona }) }}"
       when: persona is defined and persona != ""
 
     - name: Subnet
       ansible.builtin.set_fact:
-        body: "{{ body | combine({ 'subnet':'{{ subnet }}' }) }}"
+        body: "{{ body | combine({ 'subnet': subnet }) }}"
       when: subnet is defined and subnet != ""
 
     - name: DSCC API Call

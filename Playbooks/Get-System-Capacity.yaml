@@ -1,7 +1,7 @@
 ---
 - name: Get Storage Systems Capacity
 # Playbook get the list of storage systems registered in the DSCC
-# (c) Thomas Beha, v2.0, 10/13/2024
+# (c) Thomas Beha, v3.0 08/28/2026
 #
 # Parameter:
 #  SystemName
@@ -11,17 +11,21 @@
   hosts: localhost
   vars:
     method: "GET"
-    request_uri: "{{ storage['resourceUri'] }}/capacity-summary"
+    request_uri: "/api/v1/storage-systems?filter=name%20eq%20'{{SystemName}}'"
   tasks:
-    - name: Get storage systems from systems.json
-      ansible.builtin.set_fact:
-        systems: "{{ lookup('file', '../Outputs/systems.json') | from_json}}"
 
-    - name: Lookup system
-      vars:
-        key: "{{ SystemName }}"
+    - name: DSCC API Call - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-Call.yaml
+
+    - name: Retry the command if status 401 - Get System
+      ansible.builtin.include_tasks:
+        file: DSCC-API-401.yaml
+      when: status == 401
+
+    - name: Set new Request Uri - <storage systems resourceUri>/capacity-summary
       ansible.builtin.set_fact:
-        storage: "{{ systems[key] }}"    
+        request_uri: "{{ result.json['items'][0].resourceUri }}/capacity-summary"  
 
     - name: DSCC API Call
       ansible.builtin.include_tasks:
@@ -38,3 +42,9 @@
         result: "{{ response }}"
       ansible.builtin.include_tasks:
         file: DisplayResults.yaml
+
+    - name: Store the System Capacity Details
+      ansible.builtin.copy:
+        content: "{{ response | to_json }}"
+        dest: "{{ lookup('env','HOME') }}/.ansible/{{ SystemName }}.capacity.json"
+        mode: '0644'
